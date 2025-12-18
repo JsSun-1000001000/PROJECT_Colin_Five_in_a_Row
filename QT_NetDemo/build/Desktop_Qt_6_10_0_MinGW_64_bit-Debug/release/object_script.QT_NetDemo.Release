@@ -1,0 +1,12 @@
+release/main.o
+release/demodialog.o
+release/INetMediator.o
+release/TcpClientMediator.o
+release/TcpServerMediator.o
+release/UdpMediator.o
+release/INet.o
+release/TcpClient.o
+release/TcpServer.o
+release/UdpNet.o
+release/moc_demodialog.o
+release/moc_INetMediator.o
