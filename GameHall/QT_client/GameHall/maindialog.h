@@ -2,6 +2,7 @@
 #define MAINDIALOG_H
 
 #include <QDialog>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -13,9 +14,14 @@ class MainDialog : public QDialog
 {
     Q_OBJECT
 
+signals:
+    void SIG_close();
+
 public:
     MainDialog(QWidget *parent = nullptr);
     ~MainDialog();
+
+    void closeEvent( QCloseEvent * e );
 
 private:
     Ui::MainDialog *ui;

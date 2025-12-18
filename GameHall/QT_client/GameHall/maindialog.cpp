@@ -1,6 +1,8 @@
 #include "maindialog.h"
 #include "ui_maindialog.h"
 
+#include "QMessageBox"
+
 MainDialog::MainDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::MainDialog)
@@ -11,4 +13,19 @@ MainDialog::MainDialog(QWidget *parent)
 MainDialog::~MainDialog()
 {
     delete ui;
+}
+
+void MainDialog::closeEvent(QCloseEvent *e)
+{
+    if( QMessageBox::question(this, "退出", "是否退出")
+        == QMessageBox::Yes ){
+        //发信号
+        Q_EMIT SIG_close();
+        //同意关闭事件
+        e->accept();
+    }
+    else{
+        //忽略关闭事件
+        e->ignore();
+    }
 }
