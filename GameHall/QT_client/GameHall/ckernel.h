@@ -4,7 +4,12 @@
 #include <QObject>
 #include "maindialog.h"
 #include "INetMediator.h"
+#include "packdef.h"
+#include <vector>
 
+//成员函数指针类型
+class CKernel;
+typedef void (CKernel::*PFUN)( unsigned int lSendIP , char* buf , int nlen );
 
 //单例 最简单 静态的
 class CKernel : public QObject
@@ -19,9 +24,14 @@ public:
 public slots:
     void DestroyInstance();
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
+
+    //网络处理
+    void slot_dealloginRs( unsigned int lSendIP , char* buf , int nlen );
+
 signals:
 
 private:
+    void setNetPackFunMap();
     explicit CKernel(QObject *parent = nullptr);
     ~CKernel(){  }
     CKernel(const CKernel& kernel){};
@@ -33,6 +43,8 @@ private:
 
     INetMediator * m_client;
 
+    //协议映射表 协议头与处理函数的处理关系
+    std::vector<PFUN> m_netPackFunMap;
 };
 
 #endif // CKERNEL_H
