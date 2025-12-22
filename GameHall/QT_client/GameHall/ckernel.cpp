@@ -18,6 +18,11 @@ void CKernel::setNetPackFunMap()
 void CKernel::DestroyInstance()
 {
     qDebug()<<__func__;
+    if(m_client){
+        m_client->CloseNet();
+        delete m_client;
+        m_client = nullptr;
+    }
     delete m_mainDialog;
 }
 
@@ -43,7 +48,7 @@ void CKernel::slot_ReadyData(unsigned int lSendIP, char *buf, int nlen)
 
 void CKernel::slot_dealloginRs(unsigned int lSendIP, char *buf, int nlen)
 {
-
+    qDebug()<<__func__;
 }
 
 CKernel::CKernel(QObject *parent)
@@ -64,4 +69,13 @@ CKernel::CKernel(QObject *parent)
 
     connect(m_client, SIGNAL(SIG_ReadyData(uint,char*,int))
             , this, SLOT(slot_ReadyData(uint,char*,int)));
+
+    //模拟连接服务器 发送数据包
+    STRU_LOGIN_RQ rq;//这个位置用的请求不能定义字符串，不可以，因为string用的堆区空间
+    //这个senddata相当于copy，拷贝连续空间，给的首地址，拷贝sizeof这么多，
+    //故，这个区域一定是连续的，不能定义string，qstring这种
+    m_client->SendData(0,(char*)&rq,sizeof(rq));
+
+
+
 }
