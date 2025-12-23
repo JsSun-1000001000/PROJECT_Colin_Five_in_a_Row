@@ -62,19 +62,24 @@ CKernel::CKernel(QObject *parent)
             this, SLOT(DestroyInstance()) );
     //p.s.如果析构函数里也写了destroyinstance函数 先调用析构的然后再走到connect这里
 
-    m_mainDialog->show();
+    //m_mainDialog->show();
+
+    //show register & login window
+    m_loginDialog = new LoginDialog;
+    m_loginDialog->show();
+
 
     m_client = new TcpClientMediator;
-    m_client->OpenNet( _DEF_SERVER_IP, _DEF_TCP_PORT );
+    //m_client->OpenNet( _DEF_SERVER_IP, _DEF_TCP_PORT );
 
     connect(m_client, SIGNAL(SIG_ReadyData(uint,char*,int))
             , this, SLOT(slot_ReadyData(uint,char*,int)));
 
     //模拟连接服务器 发送数据包
-    STRU_LOGIN_RQ rq;//这个位置用的请求不能定义字符串，不可以，因为string用的堆区空间
+    //STRU_LOGIN_RQ rq;//这个位置用的请求不能定义字符串，不可以，因为string用的堆区空间
     //这个senddata相当于copy，拷贝连续空间，给的首地址，拷贝sizeof这么多，
     //故，这个区域一定是连续的，不能定义string，qstring这种
-    m_client->SendData(0,(char*)&rq,sizeof(rq));
+    //m_client->SendData(0,(char*)&rq,sizeof(rq));
 
 
 

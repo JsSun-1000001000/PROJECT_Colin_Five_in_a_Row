@@ -21,14 +21,19 @@
 
 
 //返回的结果
-//注册请求的结果
-#define user_is_exist		(0)
+//注册请求的结果 注册带则会昵称
+#define tel_is_exist		(0)
 #define register_success	(1)
+#define name_is_exist        (2)
 //登录请求的结果
 #define user_not_exist		(0)
 #define password_error		(1)
 #define login_success		(2)
-
+//添加好友
+#define no_this_user        (0)
+#define user_refuse         (1)
+#define user_offline        (2)
+#define add_success         (3)
 
 typedef int PackType;
 
@@ -81,10 +86,12 @@ typedef struct STRU_LOGIN_RS
 	// 需要 结果 , 用户的id
 	STRU_LOGIN_RS(): type(_DEF_PACK_LOGIN_RS) , result(login_success),userid(0)
 	{
+        memset( name , 0, sizeof(name) );
 	}
 	PackType type;
 	int result;
 	int userid;
+    char name[_MAX_SIZE];
 
 }STRU_LOGIN_RS;
 

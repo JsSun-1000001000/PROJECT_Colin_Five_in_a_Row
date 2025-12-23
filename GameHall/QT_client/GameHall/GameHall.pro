@@ -10,14 +10,17 @@ CONFIG += c++17
 
 SOURCES += \
     ckernel.cpp \
+    logindialog.cpp \
     main.cpp \
     maindialog.cpp
 
 HEADERS += \
     ckernel.h \
+    logindialog.h \
     maindialog.h
 
 FORMS += \
+    logindialog.ui \
     maindialog.ui
 
 # Default rules for deployment.
@@ -29,3 +32,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 include(./netapi/netapi.pri)
 INCLUDEPATH += ./netapi/net
 INCLUDEPATH += ./netapi/mediator
+
+RESOURCES += \
+    resource.qrc

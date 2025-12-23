@@ -2,10 +2,12 @@
 #define CKERNEL_H
 
 #include <QObject>
-#include "maindialog.h"
 #include "INetMediator.h"
 #include "packdef.h"
 #include <vector>
+
+#include "maindialog.h"
+#include "logindialog.h"
 
 //成员函数指针类型
 class CKernel;
@@ -40,7 +42,7 @@ private:
     }
     //成员属性 网络 ui类对象
     MainDialog * m_mainDialog;
-
+    LoginDialog * m_loginDialog;
     INetMediator * m_client;
 
     //协议映射表 协议头与处理函数的处理关系
