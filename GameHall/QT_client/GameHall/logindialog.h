@@ -20,6 +20,7 @@ public:
 signals:
     void SIG_loginCommit( QString tel, QString password );
     void SIG_registerCommit( QString tel, QString password,QString name );
+    void SIG_close();
 
 private slots:
     void on_pb_clear_clicked();
@@ -29,6 +30,8 @@ private slots:
     void on_pb_clear_register_clicked();
 
     void on_pb_register_clicked();
+
+    void closeEvent( QCloseEvent * e );
 
 private:
     Ui::LoginDialog *ui;

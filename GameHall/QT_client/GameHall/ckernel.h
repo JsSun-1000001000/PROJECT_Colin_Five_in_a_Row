@@ -25,10 +25,17 @@ public:
 
 public slots:
     void DestroyInstance();
-    void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
 
+    /*
+     * 窗口处理
+     */
+    void slot_loginCommit(QString tel, QString password);
+    void slot_registerCommit(QString tel, QString password, QString name);
+
+    void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
     void slot_dealloginRs( unsigned int lSendIP , char* buf , int nlen );
+    void SendData( char * buf, int nlen );
 
 signals:
 

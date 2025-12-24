@@ -24,6 +24,34 @@ void CKernel::DestroyInstance()
         m_client = nullptr;
     }
     delete m_mainDialog;
+    delete m_loginDialog;
+}
+
+void CKernel::slot_loginCommit(QString tel, QString password)
+{
+    //加密——挖坑
+
+    //封包
+    STRU_LOGIN_RQ rq;
+    strcpy( rq.tel, tel.toStdString().c_str() );
+    strcpy( rq.password, password.toStdString().c_str() );
+    //发送
+    SendData( (char * )&rq, sizeof(rq) );
+}
+
+void CKernel::slot_registerCommit(QString tel, QString password, QString name)
+{
+    //加密——挖坑
+
+    //封包
+    STRU_REGISTER_RQ rq;
+    strcpy( rq.tel, tel.toStdString().c_str() );
+    strcpy( rq.password, password.toStdString().c_str() );
+    //兼容中文
+    std::string strName = name.toStdString();
+    strcpy( rq.name, strName.c_str() );
+    //发送
+    SendData( (char *)&rq, sizeof(rq) );
 }
 
 //接收处理
@@ -51,6 +79,11 @@ void CKernel::slot_dealloginRs(unsigned int lSendIP, char *buf, int nlen)
     qDebug()<<__func__;
 }
 
+void CKernel::SendData(char *buf, int nlen)
+{
+    m_client->SendData( 0, buf, nlen );
+}
+
 CKernel::CKernel(QObject *parent)
     : QObject{parent}, m_netPackFunMap(_DEF_PACK_COUNT, 0)
 {
@@ -66,6 +99,18 @@ CKernel::CKernel(QObject *parent)
 
     //show register & login window
     m_loginDialog = new LoginDialog;
+
+    /*
+     * time:2025.12.24
+     * connect login, register, close
+     */
+    connect( m_loginDialog, SIGNAL(SIG_close()),
+            this, SLOT(DestroyInstance()) );
+    connect( m_loginDialog, SIGNAL(SIG_loginCommit( QString, QString )),
+            this, SLOT(slot_loginCommit( QString, QString )) );
+    connect( m_loginDialog, SIGNAL(SIG_registerCommit( QString, QString, QString )),
+            this, SLOT(slot_registerCommit( QString, QString, QString )) );
+
     m_loginDialog->show();
 
 
