@@ -79,6 +79,28 @@ void CKernel::slot_ReadyData(unsigned int lSendIP, char *buf, int nlen)
 void CKernel::slot_dealloginRs(unsigned int lSendIP, char *buf, int nlen)
 {
     qDebug()<<__func__;
+    //拆包
+    STRU_LOGIN_RS * rs = (STRU_LOGIN_RS *)buf;
+    //根据不同结果显示
+    switch( rs->result ){
+    case user_not_exist:
+        QMessageBox::about( m_loginDialog, "Oops", "user not exist login failed");
+        break;
+    case password_error:
+        QMessageBox::about( m_loginDialog, "Oops", "password error login failed");
+        break;
+    case login_success:
+        //ui切换
+        m_loginDialog->hide();
+        m_mainDialog->show();
+        //存储
+        m_id = rs->userid;
+        m_userName = QString::fromStdString( rs->name );
+        break;
+    default:
+        QMessageBox::about( m_loginDialog, "Oops", "what the fuck did you fucking did?");
+        break;
+    }
 }
 
 void CKernel::slot_dealregisterRs(unsigned int lSendIP, char *buf, int nlen)
@@ -110,6 +132,7 @@ void CKernel::SendData(char *buf, int nlen)
 
 CKernel::CKernel(QObject *parent)
     : QObject{parent}, m_netPackFunMap(_DEF_PACK_COUNT, 0)
+    ,m_id(0), m_roomid(0), m_zoneid(0)
 {
     setNetPackFunMap();
 

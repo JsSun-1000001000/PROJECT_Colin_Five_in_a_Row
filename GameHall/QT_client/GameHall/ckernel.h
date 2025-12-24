@@ -54,6 +54,13 @@ private:
 
     //协议映射表 协议头与处理函数的处理关系
     std::vector<PFUN> m_netPackFunMap;
+
+    //个人信息
+    int m_id;
+    int m_roomid;
+    int m_zoneid;
+    QString m_userName;
+
 };
 
 #endif // CKERNEL_H
