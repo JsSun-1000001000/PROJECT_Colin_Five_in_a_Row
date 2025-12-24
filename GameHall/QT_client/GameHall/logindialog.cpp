@@ -29,6 +29,9 @@ void LoginDialog::setUI()
     //pal.setBrush( QPalette::Background,  );
     pal.setBrush( QPalette::Window, pixmap );
     this->setPalette( pal );
+    //默认登录界面
+    ui->tw_page->setCurrentIndex(0);
+
 }
 //清空
 void LoginDialog::on_pb_clear_clicked()
@@ -116,6 +119,7 @@ void LoginDialog::on_pb_register_clicked()
     //twice input password should be same
     if( password != confirm ){
         QMessageBox::about( this, "Oops", "the password and the confirm password are not the same");
+        return;
     }
     //发送信号
     Q_EMIT SIG_registerCommit( tel, password, name );

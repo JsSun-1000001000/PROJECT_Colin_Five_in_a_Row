@@ -25,7 +25,7 @@ public:
 
 public slots:
     void DestroyInstance();
-
+    void SendData( char * buf, int nlen );
     /*
      * 窗口处理
      */
@@ -35,7 +35,7 @@ public slots:
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
     void slot_dealloginRs( unsigned int lSendIP , char* buf , int nlen );
-    void SendData( char * buf, int nlen );
+    void slot_dealregisterRs( unsigned int lSendIP , char* buf , int nlen );
 
 signals:
 

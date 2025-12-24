@@ -1,6 +1,7 @@
 #include "ckernel.h"
 #include "QDebug"
 #include "TcpClientMediator.h"
+#include <QMessageBox>
 
 //宏定义封装 映射偏移
 #define NetPackMap( a ) m_netPackFunMap[ (a) - _DEF_PACK_BASE ]
@@ -12,6 +13,7 @@ void CKernel::setNetPackFunMap()
     //m_netPackFunMap[_DEF_PACK_LOGIN_RS - _DEF_PACK_BASE ] = &CKernel::slot_dealloginRs;
 
     NetPackMap(_DEF_PACK_LOGIN_RS) = &CKernel::slot_dealloginRs;
+    NetPackMap(_DEF_PACK_REGISTER_RS) = &CKernel::slot_dealregisterRs;
 
 }
 
@@ -79,6 +81,28 @@ void CKernel::slot_dealloginRs(unsigned int lSendIP, char *buf, int nlen)
     qDebug()<<__func__;
 }
 
+void CKernel::slot_dealregisterRs(unsigned int lSendIP, char *buf, int nlen)
+{
+    qDebug()<<__func__;
+    //解析数据包
+    STRU_REGISTER_RS * rs = (STRU_REGISTER_RS * )buf;
+    //根据结果弹窗
+    switch(rs->result){
+    case tel_is_exist:
+        QMessageBox::about(this->m_loginDialog, "Register Oops", "tel is exist");
+        break;
+    case name_is_exist:
+        QMessageBox::about(this->m_loginDialog, "Register Oops", "name is exist");
+        break;
+    case register_success:
+        QMessageBox::about(this->m_loginDialog, "Register Yeah", "Register SUCCESSFULLY~~");
+        break;
+    default:
+        QMessageBox::about(this->m_loginDialog, "Register Oops", "What the fuck did you fucking did?");
+        break;
+    }
+}
+
 void CKernel::SendData(char *buf, int nlen)
 {
     m_client->SendData( 0, buf, nlen );
@@ -115,7 +139,7 @@ CKernel::CKernel(QObject *parent)
 
 
     m_client = new TcpClientMediator;
-    //m_client->OpenNet( _DEF_SERVER_IP, _DEF_TCP_PORT );
+    m_client->OpenNet( _DEF_SERVER_IP, _DEF_TCP_PORT );
 
     connect(m_client, SIGNAL(SIG_ReadyData(uint,char*,int))
             , this, SLOT(slot_ReadyData(uint,char*,int)));
