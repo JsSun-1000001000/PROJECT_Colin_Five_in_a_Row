@@ -341,6 +341,9 @@ github.com/JsSun-1000001000</string>
           <height>25</height>
          </size>
         </property>
+        <property name="text">
+         <string>13212719037</string>
+        </property>
        </widget>
       </item>
      </layout>

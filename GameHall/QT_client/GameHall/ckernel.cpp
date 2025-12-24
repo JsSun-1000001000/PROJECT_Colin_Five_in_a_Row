@@ -2,6 +2,21 @@
 #include "QDebug"
 #include "TcpClientMediator.h"
 #include <QMessageBox>
+#include "md5.h"
+
+//获得md5函数
+//1_1234
+//EA135E06CD37AB7E304E1DC440C93EA2
+//结果：ea135e06cd37ab7e304e1dc440c93ea2
+//验证
+#define MD5_KEY 1234
+static std::string getMD5(QString val){
+    QString tmp = QString("%1_%2").arg(val).arg(MD5_KEY);
+    MD5 md( tmp.toStdString() );
+    return md.toString();
+}
+
+
 
 //宏定义封装 映射偏移
 #define NetPackMap( a ) m_netPackFunMap[ (a) - _DEF_PACK_BASE ]
@@ -31,24 +46,25 @@ void CKernel::DestroyInstance()
 
 void CKernel::slot_loginCommit(QString tel, QString password)
 {
-    //加密——挖坑
-
+    //加密——挖坑——完成
     //封包
     STRU_LOGIN_RQ rq;
     strcpy( rq.tel, tel.toStdString().c_str() );
-    strcpy( rq.password, password.toStdString().c_str() );
+
+    //qDebug()<<password<<"MD5"<<getMD5( password ).c_str();
+
+    strcpy( rq.password, getMD5( password ).c_str() );
     //发送
     SendData( (char * )&rq, sizeof(rq) );
 }
 
 void CKernel::slot_registerCommit(QString tel, QString password, QString name)
 {
-    //加密——挖坑
-
+    //加密——挖坑——完成
     //封包
     STRU_REGISTER_RQ rq;
     strcpy( rq.tel, tel.toStdString().c_str() );
-    strcpy( rq.password, password.toStdString().c_str() );
+    strcpy( rq.password, getMD5( password ).c_str() );
     //兼容中文
     std::string strName = name.toStdString();
     strcpy( rq.name, strName.c_str() );
