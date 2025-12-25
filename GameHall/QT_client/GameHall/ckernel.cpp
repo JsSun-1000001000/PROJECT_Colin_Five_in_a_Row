@@ -4,6 +4,10 @@
 #include <QMessageBox>
 #include "md5.h"
 
+#include <QSettings>
+#include <QCoreApplication>
+#include <QFileInfo>
+
 //获得md5函数
 //1_1234
 //EA135E06CD37AB7E304E1DC440C93EA2
@@ -30,6 +34,43 @@ void CKernel::setNetPackFunMap()
     NetPackMap(_DEF_PACK_LOGIN_RS) = &CKernel::slot_dealloginRs;
     NetPackMap(_DEF_PACK_REGISTER_RS) = &CKernel::slot_dealregisterRs;
 
+}
+
+
+
+void CKernel::ConfigSet()
+{
+    //获取配置文件的信息以及设置
+    //.ini配置文件
+    //[net]组名 groupname
+    //key = value
+
+    //ip默认
+    strcpy( m_serverIP, _DEF_SERVER_IP );
+    //设置和获取配置文件 有还是没有 配置文件在哪里？设置和exe同一级的目录
+    QString path = QCoreApplication::applicationDirPath() + "/config.ini";
+    QFileInfo info(path);
+    if( info.exists() ){
+        //存在
+        QSettings setting( path, QSettings::IniFormat, nullptr );
+        //[net]写入组
+        setting.beginGroup("net");
+        QVariant var = setting.value( "ip" );
+        QString strip = var.toString();
+        if( !strip.isEmpty() ){
+            strcpy( m_serverIP, strip.toStdString().c_str() );
+        }
+        setting.endGroup();
+    }
+    else{
+        //不存在
+        QSettings setting( path, QSettings::IniFormat, nullptr );
+        //[net]写入组
+        setting.beginGroup("net");
+        setting.setValue( "ip", QString::fromStdString(m_serverIP) );
+        setting.endGroup();
+    }
+    qDebug()<< "ip: " << m_serverIP;
 }
 
 void CKernel::DestroyInstance()
@@ -150,6 +191,7 @@ CKernel::CKernel(QObject *parent)
     : QObject{parent}, m_netPackFunMap(_DEF_PACK_COUNT, 0)
     ,m_id(0), m_roomid(0), m_zoneid(0)
 {
+    ConfigSet();
     setNetPackFunMap();
 
     m_mainDialog = new MainDialog;
@@ -178,7 +220,7 @@ CKernel::CKernel(QObject *parent)
 
 
     m_client = new TcpClientMediator;
-    m_client->OpenNet( _DEF_SERVER_IP, _DEF_TCP_PORT );
+    m_client->OpenNet( m_serverIP, _DEF_TCP_PORT );
 
     connect(m_client, SIGNAL(SIG_ReadyData(uint,char*,int))
             , this, SLOT(slot_ReadyData(uint,char*,int)));

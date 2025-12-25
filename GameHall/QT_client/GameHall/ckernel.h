@@ -41,6 +41,7 @@ signals:
 
 private:
     void setNetPackFunMap();
+    void ConfigSet();
     explicit CKernel(QObject *parent = nullptr);
     ~CKernel(){  }
     CKernel(const CKernel& kernel){};
@@ -60,7 +61,7 @@ private:
     int m_roomid;
     int m_zoneid;
     QString m_userName;
-
+    char m_serverIP[20];
 };
 
 #endif // CKERNEL_H

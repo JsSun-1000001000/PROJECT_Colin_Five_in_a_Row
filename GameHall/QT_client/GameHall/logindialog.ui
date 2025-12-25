@@ -248,6 +248,9 @@ github.com/JsSun-1000001000</string>
           <height>25</height>
          </size>
         </property>
+        <property name="text">
+         <string>12345</string>
+        </property>
         <property name="echoMode">
          <enum>QLineEdit::EchoMode::Password</enum>
         </property>
@@ -348,7 +351,7 @@ github.com/JsSun-1000001000</string>
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>30</x>
