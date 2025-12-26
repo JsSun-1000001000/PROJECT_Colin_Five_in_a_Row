@@ -3,5 +3,11 @@
         <file>images/background.jpg</file>
         <file>images/GameHome.png</file>
         <file>images/q151020-01.png</file>
+        <file>images/fiveinLine.jpg</file>
+        <file>Resource2/face/btn_avatar_a10.png</file>
+        <file>Resource2/face/btn_avatar_a101.png</file>
+        <file>images/backgroundmain.png</file>
+        <file>images/icon_rui.png</file>
+        <file>Resource2/icon/slotwait.jpg</file>
     </qresource>
 </RCC>

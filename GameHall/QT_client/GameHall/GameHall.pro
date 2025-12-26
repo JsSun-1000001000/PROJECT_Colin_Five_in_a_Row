@@ -10,18 +10,27 @@ CONFIG += c++17
 
 SOURCES += \
     ckernel.cpp \
+    fiveinlinezone.cpp \
     logindialog.cpp \
     main.cpp \
-    maindialog.cpp
+    maindialog.cpp \
+    roomdialog.cpp \
+    roomitem.cpp
 
 HEADERS += \
     ckernel.h \
+    fiveinlinezone.h \
     logindialog.h \
-    maindialog.h
+    maindialog.h \
+    roomdialog.h \
+    roomitem.h
 
 FORMS += \
+    fiveinlinezone.ui \
     logindialog.ui \
-    maindialog.ui
+    maindialog.ui \
+    roomdialog.ui \
+    roomitem.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
