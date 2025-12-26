@@ -4,6 +4,7 @@
 #include <QDialog>
 #include "roomitem.h"
 #include "QGridLayout"
+#include <QCloseEvent>
 
 namespace Ui {
 class FiveInLineZone;
@@ -12,10 +13,14 @@ class FiveInLineZone;
 class FiveInLineZone : public QDialog
 {
     Q_OBJECT
-
+signals:
+    void SIG_close();
+    void SIG_joinRoom( int roomid );
 public:
     explicit FiveInLineZone(QWidget *parent = nullptr);
     ~FiveInLineZone();
+
+    void closeEvent(QCloseEvent * event);
 
 private:
     Ui::FiveInLineZone *ui;

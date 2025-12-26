@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainDialog;
@@ -16,6 +17,8 @@ class MainDialog : public QDialog
 
 signals:
     void SIG_close();
+    //open the five in row zone
+    void SIG_joinZone( int zoneid );
 
 public:
     MainDialog(QWidget *parent = nullptr);

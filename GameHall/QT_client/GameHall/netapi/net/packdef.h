@@ -123,6 +123,18 @@ struct STRU_LEAVE_ZONE{
     int userid;
 };
 
+//专区内每个房间人数————和视频里的不一样 注意
+#define DEF_ZONE_ROOM_INFO ( _DEF_PACK_BASE + 10 )
+#define DEF_ZONE_ROOM_COUNT 121
+struct STRU_ZONE_ROOM_INFO{
+    //解决这是什么包 谁退出哪个区
+    STRU_ZONE_ROOM_INFO():type( DEF_ZONE_ROOM_INFO ){
+        memset( roomInfo, 0, sizeof( roomInfo ));
+    }
+    PackType type;
+    int roomInfo[ DEF_ZONE_ROOM_COUNT ];
+};
+
 #define DEF_JOIN_ROOM_RQ    (_DEF_PACK_BASE + 6 )
 
 //加入房间
@@ -168,6 +180,7 @@ struct STRU_ROOM_MEMBER{
     int userid;
     char name[_MAX_SIZE];
 };
+
 
 #define DEF_LEAVE_ROOM_RQ   ( _DEF_PACK_BASE + 9 )
 //退出房间

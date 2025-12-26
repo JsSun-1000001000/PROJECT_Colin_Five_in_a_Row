@@ -112,6 +112,19 @@ void CKernel::slot_registerCommit(QString tel, QString password, QString name)
     //发送
     SendData( (char *)&rq, sizeof(rq) );
 }
+/*
+ * author jssun
+ * time 2025.12.26: add a definition of slot_joinZone
+ */
+ //提交加入分区
+void CKernel::slot_joinZone(int zoneid)
+{
+    STRU_JOIN_ZONE rq;
+    rq.userid = m_id;
+    rq.zoneid = zoneid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
 
 //接收处理
 void CKernel::slot_ReadyData(unsigned int lSendIP, char *buf, int nlen)
@@ -199,6 +212,13 @@ CKernel::CKernel(QObject *parent)
     connect( m_mainDialog, SIGNAL( SIG_close() ),
             this, SLOT(DestroyInstance()) );
     //p.s.如果析构函数里也写了destroyinstance函数 先调用析构的然后再走到connect这里
+
+    /*
+     * time: 2025.12.26
+     * connect: maindialog five in row push button
+     */
+    connect( m_mainDialog, SIGNAL( SIG_joinZone(int) ),
+            this, SLOT(slot_joinZone(int)) );
 
     //m_mainDialog->show();
 /*-----------------------------------------------------------------------------*/

@@ -42,7 +42,7 @@ background-color: rgb(251, 238, 255);</string>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>20</y>
      <width>290</width>
      <height>220</height>
@@ -301,6 +301,26 @@ background-color: rgb(251, 238, 255);</string>
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="pb_quickStart">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>10</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>幼圆</family>
+      <pointsize>16</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>快速   匹配</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QTabWidget" name="tw_page">
    <property name="geometry">
@@ -346,7 +366,7 @@ background-color: rgb(251, 238, 255);</string>
     <enum>QTabWidget::TabShape::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <property name="elideMode">
     <enum>Qt::TextElideMode::ElideNone</enum>
@@ -380,9 +400,9 @@ background-color: rgb(251, 238, 255);</string>
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>400</y>
+       <y>390</y>
        <width>230</width>
-       <height>30</height>
+       <height>31</height>
       </rect>
      </property>
     </widget>
@@ -390,7 +410,7 @@ background-color: rgb(251, 238, 255);</string>
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>400</y>
+       <y>390</y>
        <width>61</width>
        <height>31</height>
       </rect>

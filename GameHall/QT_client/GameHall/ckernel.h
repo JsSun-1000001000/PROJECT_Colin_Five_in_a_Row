@@ -30,9 +30,12 @@ public slots:
     void SendData( char * buf, int nlen );
     /*
      * 窗口处理
+     * 2025.12.24: add slot_logincommit and slotregistercommit
+     * 2025.12.26: add slot_joinZone
      */
     void slot_loginCommit(QString tel, QString password);
     void slot_registerCommit(QString tel, QString password, QString name);
+    void slot_joinZone(int zoneid);
 
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理

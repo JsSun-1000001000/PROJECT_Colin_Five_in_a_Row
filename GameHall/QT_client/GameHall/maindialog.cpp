@@ -31,11 +31,13 @@ void MainDialog::closeEvent(QCloseEvent *e)
 }
 
 //main界面点击五子棋转到五子棋专区
+#include "packdef.h"
+//以后最好把公有的和私有的协议写在两个头文件里
 void MainDialog::on_pb_fiveinLine_clicked()
 {
-    //跳转
-
     //发信号
+    Q_EMIT SIG_joinZone( Five_in_Line );
 
+    this->hide();
 }
 
