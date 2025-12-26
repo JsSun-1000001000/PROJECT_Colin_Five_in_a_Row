@@ -19,6 +19,8 @@
 #define _DEF_PACK_LOGIN_RQ	(_DEF_PACK_BASE + 2 )
 #define _DEF_PACK_LOGIN_RS	(_DEF_PACK_BASE + 3 )
 
+//p.s. 服务端是聊天的协议 服务端是音视频的协议 2025.12.26
+//游戏头文件在下面
 
 //返回的结果
 //注册请求的结果 注册带则会昵称
@@ -95,7 +97,88 @@ typedef struct STRU_LOGIN_RS
 
 }STRU_LOGIN_RS;
 
+/*------------------------------------游戏相关------------------------------------*/
 
+#define DEF_PACK_JOIN_ZONE      (_DEF_PACK_BASE + 4 )
+#define DEF_PACK_LEAVE_ZONE     (_DEF_PACK_BASE + 5 )
+
+enum ENUM_PLAY_ZONE{Five_in_Line = 0x10, E_L_S, D_D_Z};
+//加入专区
+struct STRU_JOIN_ZONE{
+    //解决这是什么包 谁加入哪个专区
+    STRU_JOIN_ZONE():type(DEF_PACK_JOIN_ZONE),userid(0),zoneid(0){
+
+    }
+    PackType type;
+    int userid;
+    int zoneid;
+};
+//退出专区
+struct STRU_LEAVE_ZONE{
+    //解决这是什么包 谁退出哪个区
+    STRU_LEAVE_ZONE():type(DEF_PACK_LEAVE_ZONE),userid(0){
+
+    }
+    PackType type;
+    int userid;
+};
+
+#define DEF_JOIN_ROOM_RQ    (_DEF_PACK_BASE + 6 )
+
+//加入房间
+struct STRU_JOIN_ROOM_RQ{
+    //解决这是什么包 谁加入哪个房间
+    STRU_JOIN_ROOM_RQ():type(DEF_JOIN_ROOM_RQ),userid(0),roomid(0){
+
+    }
+    PackType type;
+    int userid;
+    int roomid;
+};//发给服务器 服务器会同步房间成员信息
+
+//房间 为了避免0 出现歧义 房间号是0 还是没有初始化 把0让出来 1-120
+
+#define DEF_JOIN_ROOM_RS    (_DEF_PACK_BASE + 7 )
+enum ENUM_ROOM_STATUS{ _host, _player, _watcher };//房主 玩家 观战者
+//加入房间回复
+struct STRU_JOIN_ROOM_RS{
+    //解决这是什么包 谁 哪个房间 叫什么名字
+    STRU_JOIN_ROOM_RS():type( DEF_JOIN_ROOM_RS ),
+        userid(0),
+        roomid(0),
+        status(_host),
+        result(1){
+
+    }
+    PackType type;
+    int userid;
+    int roomid;
+    int status;
+    int result;// 0 fail 1 success
+};
+
+#define DEF_ROOM_MEMBER     ( _DEF_PACK_BASE + 8 )
+//房间成员
+struct STRU_ROOM_MEMBER{
+    //解决这是什么包 谁 哪个房间 叫什么名字
+    STRU_ROOM_MEMBER():type( DEF_ROOM_MEMBER ), userid(0){
+        memset( name, 0, sizeof(name) );
+    }
+    PackType type;
+    int userid;
+    char name[_MAX_SIZE];
+};
+
+#define DEF_LEAVE_ROOM_RQ   ( _DEF_PACK_BASE + 9 )
+//退出房间
+struct STRU_LEAVE_ROOM_RQ{
+    //解决这是什么包 谁 退出了房间
+    STRU_LEAVE_ROOM_RQ():type( DEF_LEAVE_ROOM_RQ ), userid(0){
+
+    }
+    PackType type;
+    int userid;
+};//会被转发 如果自己不是房主 房主退出 自己也跟着退出
 
 
 
