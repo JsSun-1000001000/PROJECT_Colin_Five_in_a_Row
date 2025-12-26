@@ -115,7 +115,7 @@ background-color: rgb(251, 238, 255);</string>
      <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>120</x>
@@ -181,7 +181,7 @@ background-color: rgb(251, 238, 255);</string>
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -366,7 +366,7 @@ background-color: rgb(251, 238, 255);</string>
        <x>0</x>
        <y>0</y>
        <width>291</width>
-       <height>401</height>
+       <height>391</height>
       </rect>
      </property>
      <property name="font">
@@ -392,7 +392,7 @@ background-color: rgb(251, 238, 255);</string>
        <x>230</x>
        <y>400</y>
        <width>61</width>
-       <height>30</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="font">
@@ -411,7 +411,7 @@ background-color: rgb(251, 238, 255);</string>
   <widget class="QWidget" name="wdg_roomList" native="true">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>310</x>
      <y>20</y>
      <width>681</width>
      <height>681</height>
@@ -434,20 +434,49 @@ background-color: rgb(251, 238, 255);</string>
      <number>0</number>
     </property>
     <item>
-     <widget class="QWidget" name="wdg_roomGrid" native="true"/>
-    </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="widgetResizable">
+       <bool>true</bool>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
+      <widget class="QWidget" name="scrollAreaWidgetContents_2">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>679</width>
+         <height>679</height>
+        </rect>
+       </property>
+       <widget class="QWidget" name="">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>681</width>
+          <height>681</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QWidget" name="wdg_roomGrid" native="true"/>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

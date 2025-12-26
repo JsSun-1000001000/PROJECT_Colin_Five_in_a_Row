@@ -23,6 +23,9 @@ public:
 
     void closeEvent( QCloseEvent * e );
 
+private slots:
+    void on_pb_fiveinLine_clicked();
+
 private:
     Ui::MainDialog *ui;
 };

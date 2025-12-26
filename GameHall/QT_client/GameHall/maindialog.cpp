@@ -29,3 +29,13 @@ void MainDialog::closeEvent(QCloseEvent *e)
         e->ignore();
     }
 }
+
+//main界面点击五子棋转到五子棋专区
+void MainDialog::on_pb_fiveinLine_clicked()
+{
+    //跳转
+
+    //发信号
+
+}
+

@@ -193,7 +193,7 @@ CKernel::CKernel(QObject *parent)
 {
     ConfigSet();
     setNetPackFunMap();
-
+/*-----------------------------------------------------------------------------*/
     m_mainDialog = new MainDialog;
 
     connect( m_mainDialog, SIGNAL( SIG_close() ),
@@ -201,7 +201,7 @@ CKernel::CKernel(QObject *parent)
     //p.s.如果析构函数里也写了destroyinstance函数 先调用析构的然后再走到connect这里
 
     //m_mainDialog->show();
-
+/*-----------------------------------------------------------------------------*/
     //show register & login window
     m_loginDialog = new LoginDialog;
 
@@ -217,8 +217,14 @@ CKernel::CKernel(QObject *parent)
             this, SLOT(slot_registerCommit( QString, QString, QString )) );
 
     m_loginDialog->show();
+/*-----------------------------------------------------------------------------*/
 
+    m_fiveInLineZone = new FiveInLineZone;
+    m_fiveInLineZone->show();
+    m_roomDialog = new RoomDialog;
+    m_roomDialog->show();
 
+/*-----------------------------------------------------------------------------*/
     m_client = new TcpClientMediator;
     m_client->OpenNet( m_serverIP, _DEF_TCP_PORT );
 

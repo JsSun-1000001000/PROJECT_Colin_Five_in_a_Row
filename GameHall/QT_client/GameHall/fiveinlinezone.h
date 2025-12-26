@@ -2,6 +2,8 @@
 #define FIVEINLINEZONE_H
 
 #include <QDialog>
+#include "roomitem.h"
+#include "QGridLayout"
 
 namespace Ui {
 class FiveInLineZone;
@@ -17,6 +19,8 @@ public:
 
 private:
     Ui::FiveInLineZone *ui;
+
+    QGridLayout * m_layout;
 };
 
 #endif // FIVEINLINEZONE_H

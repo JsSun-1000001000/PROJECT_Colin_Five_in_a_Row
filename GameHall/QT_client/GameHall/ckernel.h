@@ -8,6 +8,8 @@
 
 #include "maindialog.h"
 #include "logindialog.h"
+#include "fiveinlinezone.h"
+#include "roomdialog.h"
 
 //成员函数指针类型
 class CKernel;
@@ -51,6 +53,9 @@ private:
     //成员属性 网络 ui类对象
     MainDialog * m_mainDialog;
     LoginDialog * m_loginDialog;
+    FiveInLineZone * m_fiveInLineZone;
+    RoomDialog * m_roomDialog;
+
     INetMediator * m_client;
 
     //协议映射表 协议头与处理函数的处理关系

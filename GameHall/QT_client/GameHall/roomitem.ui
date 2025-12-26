@@ -108,10 +108,16 @@ background-image: url(:/images/fiveinLine.jpg);</string>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(255, 0, 0);
-image: url(:/images/icon_rui.png);</string>
+</string>
    </property>
    <property name="text">
     <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="resource.qrc">:/Resource2/icon/slotwait.jpg</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QLabel" name="lb_player2">
