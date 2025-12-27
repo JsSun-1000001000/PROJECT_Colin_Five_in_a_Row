@@ -19,7 +19,7 @@
 #define _DEF_PACK_LOGIN_RQ	(_DEF_PACK_BASE + 2 )
 #define _DEF_PACK_LOGIN_RS	(_DEF_PACK_BASE + 3 )
 
-//p.s. 服务端是聊天的协议 服务端是音视频的协议 2025.12.26
+//p.s. 客户端是聊天的协议 服务端是音视频的协议 2025.12.26
 //游戏头文件在下面
 
 //返回的结果

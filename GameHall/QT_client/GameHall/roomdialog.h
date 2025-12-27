@@ -15,8 +15,11 @@ public:
     explicit RoomDialog(QWidget *parent = nullptr);
     ~RoomDialog();
 
+    void setInfo( int roomid );
 private:
     Ui::RoomDialog *ui;
+
+    int m_roomid;
 };
 
 #endif // ROOMDIALOG_H

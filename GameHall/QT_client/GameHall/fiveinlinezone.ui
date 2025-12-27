@@ -366,7 +366,7 @@ background-color: rgb(251, 238, 255);</string>
     <enum>QTabWidget::TabShape::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="elideMode">
     <enum>Qt::TextElideMode::ElideNone</enum>
@@ -467,7 +467,7 @@ background-color: rgb(251, 238, 255);</string>
          <height>679</height>
         </rect>
        </property>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>0</x>

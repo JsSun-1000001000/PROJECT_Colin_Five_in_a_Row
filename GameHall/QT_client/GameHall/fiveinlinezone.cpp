@@ -19,7 +19,7 @@ FiveInLineZone::FiveInLineZone(QWidget *parent)
         item->setInfo( i+1 );
         //roomitem->fiveinlinezone->ckernel
         connect(item, SIGNAL( SIG_JoinRoom(int) ),
-                this,SLOT( SIG_joinRoom(int) ));
+                this,SIGNAL( SIG_joinRoom(int) ));
         m_layout->addWidget( item, i/2, i%2);
     }
 

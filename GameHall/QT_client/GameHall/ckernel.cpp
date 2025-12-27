@@ -33,6 +33,12 @@ void CKernel::setNetPackFunMap()
 
     NetPackMap(_DEF_PACK_LOGIN_RS) = &CKernel::slot_dealloginRs;
     NetPackMap(_DEF_PACK_REGISTER_RS) = &CKernel::slot_dealregisterRs;
+    /*
+     * time 2025.12.27
+     *
+     */
+    NetPackMap(DEF_JOIN_ROOM_RS) = &CKernel::slot_dealJoinRoomRs;
+
 
 }
 
@@ -113,15 +119,70 @@ void CKernel::slot_registerCommit(QString tel, QString password, QString name)
     SendData( (char *)&rq, sizeof(rq) );
 }
 /*
+ * time 2025.12.27
+ * refactor slot leave zone
+ */
+void CKernel::slot_leaveZone()
+{
+    //成员属性修改
+    m_zoneid = 0;
+    //请求
+    STRU_LEAVE_ZONE rq;
+    rq.userid = m_id;
+    SendData( (char *)&rq, sizeof(rq) );
+    //ui跳转
+    m_mainDialog->show();
+}
+/*
  * author jssun
  * time 2025.12.26: add a definition of slot_joinZone
  */
  //提交加入分区
 void CKernel::slot_joinZone(int zoneid)
 {
+    /*
+     * time 2025.12.27
+     * member changes the property
+     */
+    m_zoneid = zoneid;
+
+    //请求包
     STRU_JOIN_ZONE rq;
     rq.userid = m_id;
     rq.zoneid = zoneid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+    /*
+     * time 2025.12.27
+     * show the five in line zone
+     */
+    switch( zoneid ){
+    case Five_in_Line:
+        m_fiveInLineZone->show();
+        break;
+    }
+}
+/*
+ * time 2025.12.27
+ * refactor slot_joinRoom
+ */
+//提交加入房间
+void CKernel::slot_joinRoom(int roomid)
+{
+    /*
+     * time 2025.12.27
+     * judge if the roomid != 0
+     */
+    if( m_roomid != 0 ){
+        QMessageBox::about( nullptr, "Oops", "已经在房间，无法加入");
+        return;
+    }
+    //加入成功后隐藏
+    //m_fiveInLineZone->hide();
+    //提交请求
+    STRU_JOIN_ROOM_RQ rq;
+    rq.userid = m_id;
+    rq.roomid = roomid;
 
     SendData( (char *)&rq, sizeof(rq) );
 }
@@ -194,6 +255,25 @@ void CKernel::slot_dealregisterRs(unsigned int lSendIP, char *buf, int nlen)
         break;
     }
 }
+//加入房间回复处理
+void CKernel::slot_dealJoinRoomRs(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_JOIN_ROOM_RS * rs = (STRU_JOIN_ROOM_RS *)buf;
+    if( rs->result == 0){
+        QMessageBox::about( nullptr, "Oops", "加入房间失败" );//专区要具体
+        return;
+    }
+    if( rs->status == _host ){
+        m_isHost = true;
+    }
+    m_roomid = rs->roomid;
+    //成功跳转 成员赋值
+    m_fiveInLineZone->hide();
+    m_roomDialog->setInfo( m_roomid );
+    m_roomDialog->show();
+    //问题、未来扩展游戏区域不同怎么显示和隐藏
+}
 
 void CKernel::SendData(char *buf, int nlen)
 {
@@ -202,7 +282,7 @@ void CKernel::SendData(char *buf, int nlen)
 
 CKernel::CKernel(QObject *parent)
     : QObject{parent}, m_netPackFunMap(_DEF_PACK_COUNT, 0)
-    ,m_id(0), m_roomid(0), m_zoneid(0)
+    ,m_id(0), m_roomid(0), m_zoneid(0),m_isHost(false)
 {
     ConfigSet();
     setNetPackFunMap();
@@ -240,9 +320,20 @@ CKernel::CKernel(QObject *parent)
 /*-----------------------------------------------------------------------------*/
 
     m_fiveInLineZone = new FiveInLineZone;
-    m_fiveInLineZone->show();
+    //m_fiveInLineZone->show();
+    /*
+     * time 2025.12.27
+     * connect five in line zone when you click the button
+     */
+    connect( m_fiveInLineZone, SIGNAL(SIG_joinRoom(int))
+            , this, SLOT(slot_joinRoom(int)) );
+/*----------------leave zone connection----------------------------------------*/
+    connect( m_fiveInLineZone, SIGNAL(SIG_close())
+            , this, SLOT(slot_leaveZone()) );
+
+
     m_roomDialog = new RoomDialog;
-    m_roomDialog->show();
+    //m_roomDialog->show();
 
 /*-----------------------------------------------------------------------------*/
     m_client = new TcpClientMediator;

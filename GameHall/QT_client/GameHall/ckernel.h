@@ -35,13 +35,19 @@ public slots:
      */
     void slot_loginCommit(QString tel, QString password);
     void slot_registerCommit(QString tel, QString password, QString name);
+    void slot_leaveZone();
     void slot_joinZone(int zoneid);
+    /*
+     * time 2025.12.27
+     * definite slot_joinRoom(int)
+     */
+    void slot_joinRoom(int roomid);
 
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
     void slot_dealloginRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealregisterRs( unsigned int lSendIP , char* buf , int nlen );
-
+    void slot_dealJoinRoomRs( unsigned int lSendIP , char* buf , int nlen );
 signals:
 
 private:
@@ -68,6 +74,7 @@ private:
     int m_id;
     int m_roomid;
     int m_zoneid;
+    bool m_isHost;
     QString m_userName;
     char m_serverIP[20];
 };
