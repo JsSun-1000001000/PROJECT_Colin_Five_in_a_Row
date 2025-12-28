@@ -48,7 +48,8 @@ public slots:
     void slot_dealloginRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealregisterRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealJoinRoomRs( unsigned int lSendIP , char* buf , int nlen );
-signals:
+    void slot_dealRoomMemberRq( unsigned int lSendIP , char* buf , int nlen );
+//signals:
 
 private:
     void setNetPackFunMap();

@@ -38,8 +38,11 @@ void CKernel::setNetPackFunMap()
      *
      */
     NetPackMap(DEF_JOIN_ROOM_RS) = &CKernel::slot_dealJoinRoomRs;
-
-
+    /*
+     * time 2025.12.28
+     * room member
+     */
+    NetPackMap(DEF_ROOM_MEMBER) = &CKernel::slot_dealRoomMemberRq;
 }
 
 
@@ -273,6 +276,26 @@ void CKernel::slot_dealJoinRoomRs(unsigned int lSendIP, char *buf, int nlen)
     m_roomDialog->setInfo( m_roomid );
     m_roomDialog->show();
     //问题、未来扩展游戏区域不同怎么显示和隐藏
+}
+/*
+ * time 2025.12.28
+ * dealRoomMemberRq
+ */
+void CKernel::slot_dealRoomMemberRq(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包 别人给你发 自己给自己发
+    STRU_ROOM_MEMBER *rq = (STRU_ROOM_MEMBER *)buf;
+    //设计的时候要加个身份——加身份了
+    if( rq->status == _host ){
+        m_roomDialog->setHostInfo( rq->userid,
+                                  QString::fromStdString(rq->name));
+    }
+    if( rq->status == _player ){
+        m_roomDialog->setPlayerInfo( rq->status,
+                                  QString::fromStdString(rq->name));
+    }
+
+    m_roomDialog->setUserStatus( m_isHost?_host:_player);
 }
 
 void CKernel::SendData(char *buf, int nlen)

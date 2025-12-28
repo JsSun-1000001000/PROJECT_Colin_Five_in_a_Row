@@ -16,10 +16,25 @@ public:
     ~RoomDialog();
 
     void setInfo( int roomid );
+    /*
+     * time 2025.12.28
+     * sethostinfo setplayerinfo
+     */
+    void setUserStatus( int status );
+    void setHostInfo( int id, QString name );
+    void setPlayerInfo( int id, QString name);
+
 private:
     Ui::RoomDialog *ui;
 
     int m_roomid;
+    /*
+     * time 2025.12.28
+     * list<int> m_roomUserList
+     */
+    std::list<int> m_roomUserList;
+    //状态
+    int m_status;
 };
 
 #endif // ROOMDIALOG_H

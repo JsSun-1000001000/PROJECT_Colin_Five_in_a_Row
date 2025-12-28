@@ -173,11 +173,13 @@ struct STRU_JOIN_ROOM_RS{
 //房间成员
 struct STRU_ROOM_MEMBER{
     //解决这是什么包 谁 哪个房间 叫什么名字
-    STRU_ROOM_MEMBER():type( DEF_ROOM_MEMBER ), userid(0){
+    STRU_ROOM_MEMBER():type( DEF_ROOM_MEMBER ), userid(0), status(_player){
         memset( name, 0, sizeof(name) );
     }
     PackType type;
     int userid;
+    //加上身份
+    int status;
     char name[_MAX_SIZE];
 };
 
