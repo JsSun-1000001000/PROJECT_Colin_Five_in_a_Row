@@ -341,7 +341,7 @@ void CKernel::slot_dealLeaveRoomRq(unsigned int lSendIP, char *buf, int nlen){
     else{
         m_roomDialog->playerLeave(rq->userid);
     }
-    //
+
 }
 
 
