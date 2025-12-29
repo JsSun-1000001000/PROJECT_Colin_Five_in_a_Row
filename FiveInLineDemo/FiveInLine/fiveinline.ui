@@ -6,12 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>580</width>
+    <height>580</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>580</width>
+    <height>580</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>580</width>
+    <height>580</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>FiveInLine</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(181, 244, 186);</string>
   </property>
  </widget>
  <resources/>
