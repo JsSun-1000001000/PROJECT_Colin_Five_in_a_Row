@@ -1,9 +1,11 @@
 #include "roomdialog.h"
 #include "ui_roomdialog.h"
+#include <QMessageBox>
+#include "packdef.h"
 
 RoomDialog::RoomDialog(QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::RoomDialog), m_roomid(0)
+    , ui(new Ui::RoomDialog), m_roomid(0),m_status(_player)
 {
     ui->setupUi(this);
 
@@ -36,7 +38,7 @@ void RoomDialog::setInfo(int roomid)
  * time 2025.12.28
  * set user status
  */
-#include "packdef.h"
+//#include "packdef.h"
 void RoomDialog::setUserStatus(int status)
 {
     m_status = status;
@@ -53,7 +55,7 @@ void RoomDialog::setUserStatus(int status)
 void RoomDialog::setHostInfo(int id, QString name)
 {
     ui->lb_player1_name->setText( name );
-
+    ui->lb_icon_player1->setPixmap(QPixmap(":/images/icon_rui"));
     m_roomUserList.push_back( id );
 }
 /*
@@ -64,6 +66,50 @@ void RoomDialog::setHostInfo(int id, QString name)
 void RoomDialog::setPlayerInfo(int id, QString name)
 {
     ui->lb_player2_name->setText( name );
-
+    ui->lb_icon_player2->setPixmap(QPixmap(":/images/icon_rui"));
     m_roomUserList.push_back( id );
+}
+
+void RoomDialog::clearRoom()
+{
+    //ui
+    ui->lb_player1_name->setText( "等待加入" );
+    ui->lb_player2_name->setText( "等待加入" );
+    ui->lb_icon_player1->setPixmap(QPixmap(":/Resource2/icon/slotwait.jpg"));
+    ui->lb_icon_player2->setPixmap(QPixmap(":/Resource2/icon/slotwait.jpg"));
+
+    //游戏界面清空
+
+    //聊天窗口清空
+
+    //后台数据
+    m_roomid = 0;
+    m_roomUserList.clear();
+    m_status = _player;
+}
+
+void RoomDialog::playerLeave(int id)
+{
+    //ui
+    ui->lb_player2_name->setText("等待加入");
+    ui->lb_icon_player2->setPixmap(QPixmap(":/Resource2/icon/slotwait.jpg"));
+    //data
+    for(auto ite = m_roomUserList.begin();ite!=m_roomUserList.end();++ite){
+        if(id == *ite){
+            ite = m_roomUserList.erase(ite);
+            break;
+        }
+    }
+}
+//离开房间
+void RoomDialog::closeEvent(QCloseEvent *event)
+{
+    if(QMessageBox::question( this, "exit", "are you sure?")
+        == QMessageBox::Yes){
+        Q_EMIT SIG_close();
+        event->accept();
+    }
+    else{
+        event->ignore();
+    }
 }

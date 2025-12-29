@@ -39,9 +39,15 @@ public slots:
     void slot_joinZone(int zoneid);
     /*
      * time 2025.12.27
+     * slot leave room
+     */
+    void slot_leaveRoom();
+    /*
+     * time 2025.12.27
      * definite slot_joinRoom(int)
      */
     void slot_joinRoom(int roomid);
+
 
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
@@ -49,7 +55,7 @@ public slots:
     void slot_dealregisterRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealJoinRoomRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealRoomMemberRq( unsigned int lSendIP , char* buf , int nlen );
-//signals:
+    void slot_dealLeaveRoomRq(unsigned int lSendIP, char *buf, int nlen);
 
 private:
     void setNetPackFunMap();

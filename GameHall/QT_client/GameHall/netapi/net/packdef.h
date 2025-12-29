@@ -125,13 +125,30 @@ struct STRU_LEAVE_ZONE{
 
 //专区内每个房间人数————和视频里的不一样 注意
 #define DEF_ZONE_ROOM_INFO ( _DEF_PACK_BASE + 10 )
+#define DEF_ZONE_INFO_RQ   ( _DEF_PACK_BASE + 11 )
+
 #define DEF_ZONE_ROOM_COUNT 121
+//请求 专区每个房间人数
+struct STRU_ZONE_INFO_RQ{
+
+    STRU_ZONE_INFO_RQ():type( DEF_ZONE_INFO_RQ )
+        ,zoneid(0)
+    {
+
+    }
+    PackType type;
+    int zoneid;
+};
+
 struct STRU_ZONE_ROOM_INFO{
     //解决这是什么包 谁退出哪个区
-    STRU_ZONE_ROOM_INFO():type( DEF_ZONE_ROOM_INFO ){
+    STRU_ZONE_ROOM_INFO():type( DEF_ZONE_ROOM_INFO )
+        ,zoneid(0)
+    {
         memset( roomInfo, 0, sizeof( roomInfo ));
     }
     PackType type;
+    int zoneid;
     int roomInfo[ DEF_ZONE_ROOM_COUNT ];
 };
 
@@ -188,11 +205,14 @@ struct STRU_ROOM_MEMBER{
 //退出房间
 struct STRU_LEAVE_ROOM_RQ{
     //解决这是什么包 谁 退出了房间
-    STRU_LEAVE_ROOM_RQ():type( DEF_LEAVE_ROOM_RQ ), userid(0){
+    STRU_LEAVE_ROOM_RQ():type( DEF_LEAVE_ROOM_RQ ),
+        userid(0),status(_player),roomid(0){
 
     }
     PackType type;
     int userid;
+    int status;
+    int roomid;
 };//会被转发 如果自己不是房主 房主退出 自己也跟着退出
 
 

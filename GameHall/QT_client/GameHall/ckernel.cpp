@@ -43,6 +43,11 @@ void CKernel::setNetPackFunMap()
      * room member
      */
     NetPackMap(DEF_ROOM_MEMBER) = &CKernel::slot_dealRoomMemberRq;
+    /*
+     * time 2025.12.29
+     *
+     */
+    NetPackMap(DEF_LEAVE_ROOM_RQ) = &CKernel::slot_dealLeaveRoomRq;
 }
 
 
@@ -164,6 +169,26 @@ void CKernel::slot_joinZone(int zoneid)
         m_fiveInLineZone->show();
         break;
     }
+}
+/*
+ * time 2025.12.29
+ * leave room
+ */
+void CKernel::slot_leaveRoom()
+{
+    //这个人主动离开
+    STRU_LEAVE_ROOM_RQ rq;
+    rq.status = m_isHost?_host:_player;
+    rq.userid = m_id;
+    rq.roomid = m_roomid;
+    SendData((char *)&rq, sizeof(rq));
+    //界面
+    m_roomDialog->clearRoom();
+    m_roomDialog->hide();
+    m_fiveInLineZone->show();
+    //后台数据
+    m_roomid = 0;
+    m_isHost = false;
 }
 /*
  * time 2025.12.27
@@ -297,6 +322,27 @@ void CKernel::slot_dealRoomMemberRq(unsigned int lSendIP, char *buf, int nlen)
 
     m_roomDialog->setUserStatus( m_isHost?_host:_player);
 }
+/*
+ * time 2025.12.29
+ */
+void CKernel::slot_dealLeaveRoomRq(unsigned int lSendIP, char *buf, int nlen){
+    //拆包
+    STRU_LEAVE_ROOM_RQ * rq = (STRU_LEAVE_ROOM_RQ *)buf;
+    if( rq->status == _host ){
+        //界面
+        m_roomDialog->clearRoom();
+        m_roomDialog->hide();
+        m_fiveInLineZone->show();
+        //后台数据
+        m_roomid = 0;
+        m_isHost = false;
+    }
+    else{
+        m_roomDialog->playerLeave(rq->userid);
+    }
+    //
+}
+
 
 void CKernel::SendData(char *buf, int nlen)
 {
@@ -356,6 +402,11 @@ CKernel::CKernel(QObject *parent)
 
 
     m_roomDialog = new RoomDialog;
+    /*
+     * time 2025.12.29
+     */
+    connect(m_roomDialog, SIGNAL(SIG_close()),
+            this, SLOT(slot_leaveRoom()));
     //m_roomDialog->show();
 
 /*-----------------------------------------------------------------------------*/
