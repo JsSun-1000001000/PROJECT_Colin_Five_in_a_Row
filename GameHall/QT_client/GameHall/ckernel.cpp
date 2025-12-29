@@ -316,7 +316,8 @@ void CKernel::slot_dealRoomMemberRq(unsigned int lSendIP, char *buf, int nlen)
                                   QString::fromStdString(rq->name));
     }
     if( rq->status == _player ){
-        m_roomDialog->setPlayerInfo( rq->status,
+        //time 2025.12.29 fix bug: change rq->status into rq->userid
+        m_roomDialog->setPlayerInfo( rq->userid,
                                   QString::fromStdString(rq->name));
     }
 
