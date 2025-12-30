@@ -3,13 +3,16 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QDebug>
+#include <QMessageBox>
 
 FiveInLine::FiveInLine(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::FiveInLine), m_board( FIL_COLS, std::vector<int>( FIL_ROWS, 0 ) )
+    , ui(new Ui::FiveInLine)
     , m_blackOrWhite(1)
     , m_movePoint( 0,0 )
     , m_moveFlag( false )
+    , m_board( FIL_COLS, std::vector<int>( FIL_ROWS, 0 ) )
+    , m_isOver(false)
 
     //vector 初始化 有参构造 参数 多长 初值多少
 {
@@ -18,11 +21,6 @@ FiveInLine::FiveInLine(QWidget *parent)
     m_pieceColor[None] = QBrush( QColor(0,0,0,0) );//最后一个0透明色
     m_pieceColor[Black] = QBrush( QColor(0,0,0) );
     m_pieceColor[White] = QBrush( QColor(255,255,255) );
-
-    //测试数据
-    /*m_board[9][9] = Black;
-    m_board[7][8] = White;
-    m_board[8][8] = Black;*/
 
     //连接信号和槽
     connect( &m_timer, SIGNAL( timeout() ),
@@ -33,6 +31,8 @@ FiveInLine::FiveInLine(QWidget *parent)
     //网络版本 中间有kernel通过kernel发送给服务器 单机版本直接触发
     connect( this, SIGNAL( SIG_pieceDown( int, int, int ) ),
              this, SLOT( slot_pieceDown( int, int, int ) ) );
+
+    slot_startGame();
 }
 
 FiveInLine::~FiveInLine()
@@ -118,8 +118,12 @@ void FiveInLine::mousePressEvent(QMouseEvent *event)
     //QCursor::pos(); 鼠标位置
     //QMouseEvent::globalPos();
 
+    //加入结束判断
+    if( m_isOver ) goto quit;
     //点击状态
     m_moveFlag = true;
+
+    quit:
     event->accept();
 }
 
@@ -142,6 +146,9 @@ void FiveInLine::mouseReleaseEvent(QMouseEvent *event)
     int y = 0;
     float fx = (float)event->pos().x();
     float fy = (float)event->pos().y();
+
+    if( m_isOver ) goto quit;
+
     fx = ( fx - FIL_MARGIN_WIDTH - FIL_SPACE ) / FIL_SPACE;
     fy = ( fy - FIL_MARGIN_HEIGHT - FIL_SPACE ) / FIL_SPACE;
     //类似4.4 4.5 4.6
@@ -155,6 +162,7 @@ void FiveInLine::mouseReleaseEvent(QMouseEvent *event)
     Q_EMIT SIG_pieceDown( getblackOrWhite(), x, y );
 
     //落子
+    quit:
     event->accept();
 }
 
@@ -170,6 +178,12 @@ void FiveInLine::changeBlackAndWhite()
     if( m_blackOrWhite == 3 ){
         m_blackOrWhite = Black;
     }
+    if( m_blackOrWhite == Black ){
+        ui->lb_color->setText("黑子回合");
+    }
+    else{
+        ui->lb_color->setText("白子回合");
+    }
 }
 
 bool FiveInLine::isCrossLine(int x, int y)
@@ -183,6 +197,72 @@ bool FiveInLine::isCrossLine(int x, int y)
     return false;
 }
 
+bool FiveInLine::isWin(int x, int y)
+{
+    //看四条线八个方向 同色棋子个数
+    int count = 1;//初始个数为1 包括自己
+    //循环看四条线
+    for( int dr = d_z; dr < d_count; dr += 2 ){
+        for(int i = 1; i <= 4; ++i){
+            //获取偏移后的棋子坐标
+            int ix = dx[ dr ]*i + x;
+            int iy = dy[ dr ]*i + y;
+            //判断是否出界
+            if( isCrossLine( ix, iy ) ){
+                break;
+            }
+            //看是否同色
+            if( m_board[ix][iy] == m_board[x][y] ){
+                count++;
+            }else{
+                break;
+            }
+        }
+        for(int i = 1; i <= 4; ++i){
+            //获取偏移后的棋子坐标
+            int ix = dx[ dr + 1 ]*i + x;
+            int iy = dy[ dr + 1 ]*i + y;
+            //判断是否出界
+            if( isCrossLine( ix, iy ) ){
+                break;
+            }
+            //看是否同色
+            if( m_board[ix][iy] == m_board[x][y] ){
+                count++;
+            }else{
+                break;
+            }
+        }
+        if( count >= 5 ){//不看其他的了
+            break;
+        }
+        else{
+            count = 1;
+        }
+    }
+    if( count >= 5 ){
+        m_isOver = true;
+        return true;
+    }
+    return false;
+}
+
+void FiveInLine::clear()
+{
+    //状态位
+    m_isOver = true;
+    m_blackOrWhite = Black;
+    m_moveFlag = false;
+    //界面
+    for( int x = 0; x < FIL_COLS; ++x ){
+        for( int y = 0; y < FIL_ROWS; ++y ){
+            m_board[x][y] = None;
+        }
+    }
+    ui->lb_winner->setText("");
+    ui->lb_color->setText("黑子回合");
+}
+
 void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
 {
     //更新数组 切换回合
@@ -192,6 +272,20 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
     //落子 没有子才能放
     if( m_board[x][y] == None ){
         m_board[x][y] = blackorwhite;
-        changeBlackAndWhite();
+
+        //更新该点棋子颜色后 判断输赢
+        if( isWin( x, y ) ){
+            QString str = ( blackorwhite == Black ) ? "黑子" : "白子";
+            ui->lb_winner->setText( str + "赢了！" );
+            QMessageBox::information( this, "游戏结束", str + "赢了！" );
+        }else{
+            changeBlackAndWhite();
+        }
     }
+}
+
+void FiveInLine::slot_startGame()
+{
+    clear();
+    m_isOver = false;
 }

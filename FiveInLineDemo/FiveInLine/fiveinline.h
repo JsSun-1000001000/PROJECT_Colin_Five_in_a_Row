@@ -31,6 +31,11 @@ QT_END_NAMESPACE
 //落子的槽函数 对更新数组 切换回合
 //6.判断输赢
 
+//根据方向对坐标的偏移 每次是一个单位
+//1.根据当前点 一次查看左右 上下 左上右下 左下右上 四个方向棋子个数
+//2.初始棋子个数为一 然后根据方向换算新的坐标 查看是否出界，出界break
+//不然看是否和当前棋子同色 如果count到5 结束 没有到5 继续看其他直线
+
 #include <vector>
 #include <QPaintEvent>
 #include <QTimer>
@@ -62,9 +67,14 @@ public:
     void changeBlackAndWhite();
     //判断是否出界
     bool isCrossLine( int x, int y );
+    //判断输赢
+    bool isWin( int x, int y );
+    //清空
+    void clear();
 
 public slots:
     void slot_pieceDown( int blackorwhite, int x, int y );
+    void slot_startGame();
 
 private:
     Ui::FiveInLine *ui;
@@ -76,12 +86,19 @@ private:
     bool m_moveFlag;
     //黑白子枚举
     enum ENUM_BLACK_OR_WHITEP{ None = 0, Black = 1, White = 2 };
+    //方向枚举 判断输赢
+    enum enum_direction{ d_z, d_y, d_s, d_x, d_zs, d_yx, d_zx, d_ys, d_count };
+
     //成员属性 棋盘 二维数组
     std::vector< std::vector<int> > m_board;
     //棋子的颜色数组
     QBrush m_pieceColor[3];
     //定时器
     QTimer m_timer;
-
+    //判断结束标志
+    bool m_isOver;
+    //根据方向对坐标的偏移 每次是一个单位
+    int dx[ d_count ] = {-1, 1, 0, 0, -1, 1, -1, 1 };
+    int dy[ d_count ] = { 0, 0, -1, 1, -1, 1, 1, -1 };
 };
 #endif // FIVEINLINE_H
