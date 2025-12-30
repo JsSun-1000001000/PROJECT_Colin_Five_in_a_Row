@@ -13,6 +13,10 @@ class RoomDialog : public QDialog
     Q_OBJECT
 signals:
     void SIG_close();
+    //准备和开局
+    void SIG_gameReady(int zoneid, int roomid, int userid);
+    void SIG_gameStart(int zoneid, int roomid);
+
 public:
     explicit RoomDialog(QWidget *parent = nullptr);
     ~RoomDialog();
@@ -29,6 +33,18 @@ public:
     void playerLeave(int id);
 
     void closeEvent(QCloseEvent * event);
+
+    //ckernel调用
+    void setPlayerReady( int id );
+    //ckernel
+    void setGameStart();
+
+private slots:
+    void on_pb_player1_ready_clicked(bool checked);
+
+    void on_pb_player2_ready_clicked(bool checked);
+
+    void on_pb_start_clicked();
 
 private:
     Ui::RoomDialog *ui;

@@ -113,3 +113,82 @@ void RoomDialog::closeEvent(QCloseEvent *event)
         event->ignore();
     }
 }
+
+void RoomDialog::setPlayerReady(int id)
+{
+    if( m_roomUserList.size() == id ){
+        ui->pb_player1_ready->setText( "已准备" );
+    }
+    if( m_roomUserList.back() == id ){
+        ui->pb_player2_ready->setText( "已准备" );
+    }
+    if( ui->pb_player1_ready->isChecked() &&
+        ui->pb_player2_ready->isChecked() ){
+        //都准备可以开始游戏
+        ui->pb_start->setEnabled( true );
+    }
+
+}
+
+void RoomDialog::setGameStart()
+{
+    //开始准备都不好使
+    ui->pb_player1_ready->setEnabled( false );
+    ui->pb_player2_ready->setEnabled( false );
+    ui->pb_start->setEnabled( false );
+    //五子棋开始操作
+    ui->wdg_play->slot_startGame();
+}
+
+void RoomDialog::on_pb_player1_ready_clicked(bool checked)
+{
+    //点击准备按钮
+    //验证是不是自己点击
+    if( m_status != _host ){
+        QMessageBox::warning( this, "warning", "only host can ready!" );
+        return;
+    }
+    //改变按钮状态
+    //是 切换状态
+    if(ui->pb_player1_ready->isChecked()){
+        ui->pb_player1_ready->setText( "已准备" );
+        //发送准备信号
+        Q_EMIT SIG_gameReady( 0x10, m_roomid, m_roomUserList.front() );
+    }
+    else{
+        ui->pb_player1_ready->setText( "待准备" );
+    }
+}
+
+
+void RoomDialog::on_pb_player2_ready_clicked(bool checked)
+{
+    //点击准备按钮
+    //验证是不是自己点击
+    if( m_status != _player ){
+        QMessageBox::warning( this, "warning", "only player can ready!" );
+        return;
+    }
+    //改变按钮状态
+    //是 切换状态
+    if(ui->pb_player2_ready->isChecked()){
+        ui->pb_player2_ready->setText( "已准备" );
+        //发送准备信号
+        Q_EMIT SIG_gameReady( 0x10, m_roomid, m_roomUserList.front() );
+    }
+    else{
+        ui->pb_player2_ready->setText( "待准备" );
+    }
+}
+
+
+void RoomDialog::on_pb_start_clicked()
+{
+    if( m_status != _host ){
+        QMessageBox::warning( this, "warning", "only host can start game!" );
+        return;
+    }
+    //发送开始信号
+    Q_EMIT SIG_gameStart( 0x10, m_roomid );
+}
+

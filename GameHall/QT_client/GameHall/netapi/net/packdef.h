@@ -215,6 +215,64 @@ struct STRU_LEAVE_ROOM_RQ{
     int roomid;
 };//会被转发 如果自己不是房主 房主退出 自己也跟着退出
 
+/*
+ * time 2025.12.30
+ * author jssun
+ * description: 五子棋相关协议
+ */
+/*------------------------------------游戏相关------------------------------------*/
+//五子棋相关
+#define DEF_FIL_ROOM_READY      ( _DEF_PACK_BASE + 12 )
+#define DEF_FIL_GAME_START      ( _DEF_PACK_BASE + 13 )
+#define DEF_FIL_AI_BEGIN        ( _DEF_PACK_BASE + 14 )
+#define DEF_FIL_AI_END          ( _DEF_PACK_BASE + 15 )
+#define DEF_FIL_DISCARD_THIS    ( _DEF_PACK_BASE + 16 )
+#define DEF_FIL_SURREND         ( _DEF_PACK_BASE + 17 )
+#define DEF_FIL_PIECEDOWN       ( _DEF_PACK_BASE + 18 )
+#define DEF_FIL_WIN             ( _DEF_PACK_BASE + 19 )
+
+//游戏的准备
+//准备 开始 胜利 托管 弃权 投降 落子
+struct STRU_FIL_RQ{
+    STRU_FIL_RQ( PackType _type ):type( _type ),
+        userid(0),
+        zoneid(0),
+        roomid(0){
+
+    }
+    PackType type;
+    int userid;
+    int zoneid;
+    int roomid;
+};//只有知道 什么专区 什么房间 才能找到相应的人
+
+//采用另一种方式 利用客户端直到准备的个数以及开放开始
+//这个不用了 先留在这里
+struct STRU_FIL_RS{//当所有人都准备好 需要开始 都准备才能开始，2种方式 根据客户端判断 服务器发包给你
+    PackType type;
+    int userid;
+    int zoneid;
+    int roomid;
+};
+//落子
+struct STRU_FIL_PIECEDOWN{//什么专区的什么房间 谁在xy位置放了一个什么子
+    STRU_FIL_PIECEDOWN():type( DEF_FIL_PIECEDOWN ),
+        userid(0),
+        zoneid(0),
+        roomid(0),
+        color(0),
+        x(-1),
+        y(-1){
+
+    }
+    PackType type;
+    int userid;
+    int zoneid;
+    int roomid;
+    int color;
+    int x;
+    int y;
+};
 
 
 

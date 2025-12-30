@@ -40,6 +40,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 include(./netapi/netapi.pri)
 include(./md5/md5.pri)
+include(./FiveInLine/FiveInLine.pri))
 
 INCLUDEPATH += ./netapi/net
 INCLUDEPATH += ./netapi/mediator
