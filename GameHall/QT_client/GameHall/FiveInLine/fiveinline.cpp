@@ -13,6 +13,7 @@ FiveInLine::FiveInLine(QWidget *parent)
     , m_moveFlag( false )
     , m_board( FIL_COLS, std::vector<int>( FIL_ROWS, 0 ) )
     , m_isOver(false)
+    , m_status( Black ) //有参构造
 
     //vector 初始化 有参构造 参数 多长 初值多少
 {
@@ -29,8 +30,9 @@ FiveInLine::FiveInLine(QWidget *parent)
 
     //连接落子信号和槽
     //网络版本 中间有kernel通过kernel发送给服务器 单机版本直接触发
-    connect( this, SIGNAL( SIG_pieceDown( int, int, int ) ),
-             this, SLOT( slot_pieceDown( int, int, int ) ) );
+    //本地版本是在这里触发connect
+    /*connect( this, SIGNAL( SIG_pieceDown( int, int, int ) ),
+             this, SLOT( slot_pieceDown( int, int, int ) ) );*/
 
     clear();
     //slot_startGame();
@@ -121,6 +123,7 @@ void FiveInLine::mousePressEvent(QMouseEvent *event)
 
     //加入结束判断
     if( m_isOver ) goto quit;
+    if( m_status != getblackOrWhite() ) goto quit;
     //点击状态
     m_moveFlag = true;
 
@@ -149,6 +152,7 @@ void FiveInLine::mouseReleaseEvent(QMouseEvent *event)
     float fy = (float)event->pos().y();
 
     if( m_isOver ) goto quit;
+    if( m_status != getblackOrWhite() ) goto quit;
 
     fx = ( fx - FIL_MARGIN_WIDTH - FIL_SPACE ) / FIL_SPACE;
     fy = ( fy - FIL_MARGIN_HEIGHT - FIL_SPACE ) / FIL_SPACE;
@@ -264,6 +268,11 @@ void FiveInLine::clear()
     ui->lb_color->setText("黑子回合");
 }
 
+void FiveInLine::setSelfStatus(int _status)
+{
+    m_status = _status;
+}
+
 void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
 {
     //更新数组 切换回合
@@ -278,6 +287,8 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
         if( isWin( x, y ) ){
             QString str = ( blackorwhite == Black ) ? "黑子" : "白子";
             ui->lb_winner->setText( str + "赢了！" );
+
+            Q_EMIT SIG_playerWin( getblackOrWhite() );
             QMessageBox::information( this, "游戏结束", str + "赢了！" );
         }else{
             changeBlackAndWhite();

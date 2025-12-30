@@ -16,6 +16,9 @@ signals:
     //准备和开局
     void SIG_gameReady(int zoneid, int roomid, int userid);
     void SIG_gameStart(int zoneid, int roomid);
+    //落子信号
+    void SIG_pieceDown( int blackorwhite, int x, int y);
+    void SIG_playerWin( int blackorwhite );
 
 public:
     explicit RoomDialog(QWidget *parent = nullptr);
@@ -30,6 +33,7 @@ public:
     void setHostInfo( int id, QString name );
     void setPlayerInfo( int id, QString name);
     void clearRoom();
+    void resetAllPushButton(  );
     void playerLeave(int id);
 
     void closeEvent(QCloseEvent * event);
@@ -45,6 +49,9 @@ private slots:
     void on_pb_player2_ready_clicked(bool checked);
 
     void on_pb_start_clicked();
+
+public slots:
+    void slot_pieceDown( int blackorwhite, int x, int y );
 
 private:
     Ui::RoomDialog *ui;

@@ -18,7 +18,11 @@ RoomDialog::RoomDialog(QWidget *parent)
 
     //点击开局 返回开局信号
 
-
+    //五子棋类 发送的信号 转发给kernel
+    connect( ui->wdg_play, SIGNAL(SIG_pieceDown(int,int,int)),
+            this, SIGNAL(SIG_pieceDown(int,int,int)) );
+    connect( ui->wdg_play, SIGNAL(SIG_playerWin(int)),
+            this, SIGNAL(SIG_playerWin(int)) );
 
 }
 
@@ -42,10 +46,7 @@ void RoomDialog::setInfo(int roomid)
 void RoomDialog::setUserStatus(int status)
 {
     m_status = status;
-    //只有房主可以点开局
-    if( m_status == _host ){
-
-    }
+    ui->wdg_play->setSelfStatus( m_status == _host?FiveInLine::Black:FiveInLine::White );
 }
 /*
  * time 2025.12.28
@@ -79,13 +80,30 @@ void RoomDialog::clearRoom()
     ui->lb_icon_player2->setPixmap(QPixmap(":/Resource2/icon/slotwait.jpg"));
 
     //游戏界面清空
-
+    ui->pb_start->setEnabled( false );
+    ui->pb_player1_ready->setEnabled( true );
+    ui->pb_player1_ready->setChecked( false );
+    ui->pb_player2_ready->setEnabled( true );
+    ui->pb_player2_ready->setChecked( false );
+    ui->pb_player1_ready->setText("待准备");
+    ui->pb_player2_ready->setText("待准备");
     //聊天窗口清空
 
     //后台数据
     m_roomid = 0;
     m_roomUserList.clear();
     m_status = _player;
+}
+
+void RoomDialog::resetAllPushButton()
+{
+    ui->pb_start->setEnabled( false );
+    ui->pb_player1_ready->setEnabled( true );
+    ui->pb_player1_ready->setChecked( false );
+    ui->pb_player2_ready->setEnabled( true );
+    ui->pb_player2_ready->setChecked( false );
+    ui->pb_player1_ready->setText("待准备");
+    ui->pb_player2_ready->setText("待准备");
 }
 
 void RoomDialog::playerLeave(int id)
@@ -116,16 +134,58 @@ void RoomDialog::closeEvent(QCloseEvent *event)
 
 void RoomDialog::setPlayerReady(int id)
 {
-    if( m_roomUserList.size() == id ){
+    /*if( m_roomUserList.size() == id ){
+        ui->pb_player1_ready->setChecked( true );
         ui->pb_player1_ready->setText( "已准备" );
     }
     if( m_roomUserList.back() == id ){
+        ui->pb_player2_ready->setChecked( true );
         ui->pb_player2_ready->setText( "已准备" );
     }
     if( ui->pb_player1_ready->isChecked() &&
         ui->pb_player2_ready->isChecked() ){
         //都准备可以开始游戏
-        ui->pb_start->setEnabled( true );
+        if( m_status == _host ){
+            ui->pb_start->setEnabled( true );
+        }
+    }*/
+    // 在 m_roomUserList 中找到 id，确定它是第几个槽位（0 为 host/slot1, 1 为 player/slot2），并设置对应 ready 状态
+    int pos = 0;
+    bool found = false;
+    for(auto ite = m_roomUserList.begin(); ite != m_roomUserList.end(); ++ite, ++pos){
+        if(id == *ite){
+            found = true;
+            if(pos == 0){
+                ui->pb_player1_ready->setChecked(true);
+                ui->pb_player1_ready->setText("已准备");
+            } else if(pos == 1){
+                ui->pb_player2_ready->setChecked(true);
+                ui->pb_player2_ready->setText("已准备");
+            }
+            break;
+        }
+    }
+
+    if(!found){
+        // 兜底：按 front/back 判断
+        if(!m_roomUserList.empty() && m_roomUserList.front() == id){
+            ui->pb_player1_ready->setChecked(true);
+            ui->pb_player1_ready->setText("已准备");
+        } else if(!m_roomUserList.empty() && m_roomUserList.back() == id){
+            ui->pb_player2_ready->setChecked(true);
+            ui->pb_player2_ready->setText("已准备");
+        }
+    }
+
+    // 检查是否两边都 ready，若是并且本端是房主则启用 start
+    if( ui->pb_player1_ready->isChecked() && ui->pb_player2_ready->isChecked() ){
+        if( m_status == _host ){
+            ui->pb_start->setEnabled(true);
+        }
+    } else {
+        if( m_status == _host ){
+            ui->pb_start->setEnabled(false);
+        }
     }
 
 }
@@ -146,6 +206,8 @@ void RoomDialog::on_pb_player1_ready_clicked(bool checked)
     //验证是不是自己点击
     if( m_status != _host ){
         QMessageBox::warning( this, "warning", "only host can ready!" );
+        // 恢复 checkbox 状态（因为 click 已切换）
+        ui->pb_player1_ready->setChecked(!checked);
         return;
     }
     //改变按钮状态
@@ -167,6 +229,8 @@ void RoomDialog::on_pb_player2_ready_clicked(bool checked)
     //验证是不是自己点击
     if( m_status != _player ){
         QMessageBox::warning( this, "warning", "only player can ready!" );
+        // 恢复 checkbox 状态
+        ui->pb_player2_ready->setChecked(!checked);
         return;
     }
     //改变按钮状态
@@ -174,7 +238,7 @@ void RoomDialog::on_pb_player2_ready_clicked(bool checked)
     if(ui->pb_player2_ready->isChecked()){
         ui->pb_player2_ready->setText( "已准备" );
         //发送准备信号
-        Q_EMIT SIG_gameReady( 0x10, m_roomid, m_roomUserList.front() );
+        Q_EMIT SIG_gameReady( 0x10, m_roomid, m_roomUserList.back() );
     }
     else{
         ui->pb_player2_ready->setText( "待准备" );
@@ -190,5 +254,10 @@ void RoomDialog::on_pb_start_clicked()
     }
     //发送开始信号
     Q_EMIT SIG_gameStart( 0x10, m_roomid );
+}
+
+void RoomDialog::slot_pieceDown(int blackorwhite, int x, int y)
+{
+    ui->wdg_play->slot_pieceDown( blackorwhite, x, y );
 }
 

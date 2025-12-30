@@ -1,4 +1,5 @@
 #include "ckernel.h"
+#include "FiveInLine/fiveinline.h"
 #include "QDebug"
 #include "TcpClientMediator.h"
 #include <QMessageBox>
@@ -48,9 +49,21 @@ void CKernel::setNetPackFunMap()
      *
      */
     NetPackMap(DEF_LEAVE_ROOM_RQ) = &CKernel::slot_dealLeaveRoomRq;
+    /*
+     * time 2025.12.30
+     * game
+     */
+    NetPackMap(DEF_FIL_ROOM_READY  ) = &CKernel::slot_dealFilGameReadyRq;
+    NetPackMap(DEF_FIL_GAME_START  ) = &CKernel::slot_dealFilGameStartRq;
+    //NetPackMap(DEF_FIL_AI_BEGIN    ) = &CKernel::slot_deal
+    //NetPackMap(DEF_FIL_AI_END      ) = &CKernel::slot_deal
+    //NetPackMap(DEF_FIL_DISCARD_THIS) = &CKernel::slot_deal
+    //NetPackMap(DEF_FIL_SURREND     ) = &CKernel::slot_deal
+    NetPackMap(DEF_FIL_PIECEDOWN   ) = &CKernel::slot_dealFilPieceDownRq;
+    NetPackMap(DEF_FIL_WIN         ) = &CKernel::slot_dealFilWinRq;
+
+
 }
-
-
 
 void CKernel::ConfigSet()
 {
@@ -215,6 +228,66 @@ void CKernel::slot_joinRoom(int roomid)
     SendData( (char *)&rq, sizeof(rq) );
 }
 
+//五子棋准备
+void CKernel::slot_fil_gameReady(int zoneid, int roomid, int userid)
+{
+
+    STRU_FIL_RQ rq(DEF_FIL_ROOM_READY);
+    rq.zoneid = zoneid;
+    rq.roomid = roomid;
+    rq.userid = userid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
+//五子棋开局
+void CKernel::slot_fil_gameStart(int zoneid, int roomid)
+{
+    STRU_FIL_RQ rq(DEF_FIL_GAME_START);
+    rq.zoneid = zoneid;
+    rq.roomid = roomid;
+    rq.userid = m_id;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
+
+void CKernel::slot_fil_pieceDown(int blackorwhite, int x, int y)
+{
+    //封包
+    STRU_FIL_PIECEDOWN rq;
+    rq.color = blackorwhite;
+    rq.x = x;
+    rq.y = y;
+    rq.userid = m_id;
+    rq.roomid = m_roomid;
+    rq.zoneid = m_zoneid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
+
+void CKernel::slot_fil_win(int blackorwhite)
+{
+    /*//弹窗
+    QString res;
+    if( m_isHost && blackorwhite == FiveInLine::Black ){
+        res = QString("you win");
+    }
+    else{
+        res = QString("you lose");
+    }
+    QMessageBox::about( m_roomDialog, "提示", res );*/
+    //可以点准备开局
+    m_roomDialog->resetAllPushButton();
+    /*// 构造并发出胜利消息（由服务器转发给房间内所有人）
+    STRU_FIL_RQ rq(DEF_FIL_WIN);
+    rq.zoneid = m_zoneid;
+    rq.roomid = m_roomid;
+    rq.userid = m_id; // 把胜者的 userid 放入包里
+
+    SendData( (char *)&rq, sizeof(rq) );
+
+    // 不在这里直接弹窗，等待服务器转发后统一由 slot_dealFilWinRq 处理显示与重置*/
+}
+
 //接收处理
 void CKernel::slot_ReadyData(unsigned int lSendIP, char *buf, int nlen)
 {
@@ -344,6 +417,52 @@ void CKernel::slot_dealLeaveRoomRq(unsigned int lSendIP, char *buf, int nlen){
 
 }
 
+void CKernel::slot_dealFilGameReadyRq(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_FIL_RQ * rq = (STRU_FIL_RQ *)buf;
+    //什么专区 什么房间 谁 做了什么事
+    if( rq->roomid == m_roomid ){
+        m_roomDialog->setPlayerReady( rq->userid );
+    }
+}
+
+void CKernel::slot_dealFilGameStartRq(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_FIL_RQ * rq = (STRU_FIL_RQ *)buf;
+    //什么专区 什么房间 谁 做了什么事
+    if( rq->roomid == m_roomid ){
+        m_roomDialog->setGameStart();
+    }
+}
+//处理落子
+void CKernel::slot_dealFilPieceDownRq(unsigned int lSendIP, char *buf, int nlen)
+{
+    STRU_FIL_PIECEDOWN* rq = (STRU_FIL_PIECEDOWN*)buf;
+    m_roomDialog->slot_pieceDown( rq->color, rq->x, rq->y );
+}
+
+void CKernel::slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen)
+{
+    /*STRU_FIL_RQ * rq = (STRU_FIL_RQ *)buf;
+    //只处理当前房间里的通知
+    if(rq->roomid!=m_roomid) return;
+    //log
+    qDebug() << "RX FIL_WIN userid=" << rq->userid << " localid=" << m_id << " roomid=" << rq->roomid;
+
+    bool iWin = (rq->userid == m_id);
+    if(iWin){
+        QMessageBox::about( m_roomDialog, "提示", "you win" );
+    }
+    else{
+        QMessageBox::about( m_roomDialog, "提示", "you lose" );
+    }
+    // 所有人收到胜利消息后将按钮重置或禁用
+    m_roomDialog->resetAllPushButton();*/
+
+}
+
 
 void CKernel::SendData(char *buf, int nlen)
 {
@@ -369,7 +488,11 @@ CKernel::CKernel(QObject *parent)
      */
     connect( m_mainDialog, SIGNAL( SIG_joinZone(int) ),
             this, SLOT(slot_joinZone(int)) );
-
+    /*
+     * time: 2025.12.26
+     */
+    connect( m_mainDialog, SIGNAL( SIG_pieceDown(int, int, int) ),
+            this, SLOT( slot_fil_gameStart(int, int)) );
     //m_mainDialog->show();
 /*-----------------------------------------------------------------------------*/
     //show register & login window
@@ -408,6 +531,20 @@ CKernel::CKernel(QObject *parent)
      */
     connect(m_roomDialog, SIGNAL(SIG_close()),
             this, SLOT(slot_leaveRoom()));
+
+    /*
+     * time 2025.12.30
+     * connect ready and start signals
+     */
+    connect(m_roomDialog, SIGNAL(SIG_gameReady(int,int,int)),
+            this, SLOT(slot_fil_gameReady(int,int,int)));
+    connect(m_roomDialog, SIGNAL(SIG_gameStart(int,int)),
+            this, SLOT(slot_fil_gameStart(int,int)));
+
+    connect(m_roomDialog, SIGNAL( SIG_pieceDown(int,int,int) ),
+            this, SLOT(slot_fil_pieceDown(int,int,int)));
+    connect(m_roomDialog, SIGNAL( SIG_playerWin(int) ),
+            this, SLOT(slot_fil_win(int)));
     //m_roomDialog->show();
 
 /*-----------------------------------------------------------------------------*/

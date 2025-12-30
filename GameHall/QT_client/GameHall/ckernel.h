@@ -47,7 +47,16 @@ public slots:
      * definite slot_joinRoom(int)
      */
     void slot_joinRoom(int roomid);
-
+    /*
+     * time 2025.12.30
+     * 准备和开局
+     */
+    void slot_fil_gameReady(int zoneid, int roomid, int userid);
+    void slot_fil_gameStart(int zoneid, int roomid);
+    //落子
+    void slot_fil_pieceDown( int blackorwhite, int x, int y);
+    //输赢
+    void slot_fil_win( int blackorwhite );
 
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
@@ -56,6 +65,11 @@ public slots:
     void slot_dealJoinRoomRs( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealRoomMemberRq( unsigned int lSendIP , char* buf , int nlen );
     void slot_dealLeaveRoomRq(unsigned int lSendIP, char *buf, int nlen);
+
+    void slot_dealFilGameReadyRq(unsigned int lSendIP, char *buf, int nlen);
+    void slot_dealFilGameStartRq(unsigned int lSendIP, char *buf, int nlen);
+    void slot_dealFilPieceDownRq(unsigned int lSendIP, char *buf, int nlen);
+    void slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen);
 
 private:
     void setNetPackFunMap();

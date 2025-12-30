@@ -47,6 +47,7 @@ class FiveInLine : public QWidget
 signals://用信号记录落子
     //落子信号
     void SIG_pieceDown( int blackorwhite, int x, int y );
+    void SIG_playerWin( int blackorwhite );
 
 public:
     FiveInLine(QWidget *parent = nullptr);
@@ -72,6 +73,10 @@ public:
     //清空
     void clear();
 
+    void setSelfStatus(int _status);
+    //黑白子枚举
+    enum ENUM_BLACK_OR_WHITEP{ None = 0, Black = 1, White = 2 };
+
 public slots:
     void slot_pieceDown( int blackorwhite, int x, int y );
     void slot_startGame();
@@ -84,8 +89,7 @@ private:
     QPoint m_movePoint;
     //移动标志
     bool m_moveFlag;
-    //黑白子枚举
-    enum ENUM_BLACK_OR_WHITEP{ None = 0, Black = 1, White = 2 };
+
     //方向枚举 判断输赢
     enum enum_direction{ d_z, d_y, d_s, d_x, d_zs, d_yx, d_zx, d_ys, d_count };
 
@@ -100,5 +104,9 @@ private:
     //根据方向对坐标的偏移 每次是一个单位
     int dx[ d_count ] = {-1, 1, 0, 0, -1, 1, -1, 1 };
     int dy[ d_count ] = { 0, 0, -1, 1, -1, 1, 1, -1 };
+
+    //网络版本 玩家身份 不是自己回合是不能动的
+    int m_status;
+
 };
 #endif // FIVEINLINE_H
