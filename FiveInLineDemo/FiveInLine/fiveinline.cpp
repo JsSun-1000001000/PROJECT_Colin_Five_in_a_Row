@@ -18,6 +18,8 @@ FiveInLine::FiveInLine(QWidget *parent)
 {
     ui->setupUi(this);
 
+    InitAiVector();
+
     m_pieceColor[None] = QBrush( QColor(0,0,0,0) );//最后一个0透明色
     m_pieceColor[Black] = QBrush( QColor(0,0,0) );
     m_pieceColor[White] = QBrush( QColor(255,255,255) );
@@ -32,6 +34,8 @@ FiveInLine::FiveInLine(QWidget *parent)
     connect( this, SIGNAL( SIG_pieceDown( int, int, int ) ),
              this, SLOT( slot_pieceDown( int, int, int ) ) );
 
+    //cpu颜色
+    setCpuColor( White );
     slot_startGame();
 }
 
@@ -262,6 +266,64 @@ void FiveInLine::clear()
     ui->lb_winner->setText("");
     ui->lb_color->setText("黑子回合");
 }
+//初始化所有赢法
+void FiveInLine::InitAiVector()
+{
+    //躺着赢
+    for( int y = 0; y < FIL_ROWS; y++ ){
+        for( int x = 0; x < FIL_COLS - 4; x++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x+k][y] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //站着赢
+    for( int x = 0; x < FIL_COLS; x++ ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //右斜着赢/
+    for( int x = FIL_COLS - 1; x >= 4; x-- ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x-k][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //\左斜着赢
+    for( int x = 0; x < FIL_COLS - 4; x++ ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x+k][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+}
+//电脑落子 根据每种赢法 棋子的个数
+//给每一个无子的位置估分 得到所有的最优值 然后得到一个坐标
+void FiveInLine::pieceDownByCpu()
+{
+    int u,v;//最优目标坐标
+    int max = 0;
+    //估分
+    //得到最优目标坐标
+    Q_EMIT SIG_pieceDown( getblackOrWhite(), u, v );
+}
 
 void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
 {
@@ -279,7 +341,19 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
             ui->lb_winner->setText( str + "赢了！" );
             QMessageBox::information( this, "游戏结束", str + "赢了！" );
         }else{
+            /*-----------赢麻了AI-----------------------*/
+            //更新每种赢法 玩家的棋子个数
+            for( int i = 0; i < m_vecWin.size(); i++ ){
+                m_vecWin[i].playerCount += 1;
+                m_vecWin[i].cpuCount = 100;
+            }
+            //更换回合
             changeBlackAndWhite();
+            //判断是否是电脑回合 电脑下棋
+            if( m_cpuColor == getblackOrWhite() ){
+                pieceDownByCpu();
+            }
+            /*-----------赢麻了AI-----------------------*/
         }
     }
 }
@@ -288,4 +362,9 @@ void FiveInLine::slot_startGame()
 {
     clear();
     m_isOver = false;
+}
+
+void FiveInLine::setCpuColor(int newCpuColor)
+{
+    m_cpuColor = newCpuColor;
 }

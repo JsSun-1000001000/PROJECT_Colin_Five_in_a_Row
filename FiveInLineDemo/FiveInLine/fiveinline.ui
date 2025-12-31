@@ -26,9 +26,10 @@
    <string>FiveInLine</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(181, 244, 186);</string>
+   <string notr="true">background-color: rgb(181, 244, 186);
+</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
