@@ -266,15 +266,22 @@ void CKernel::slot_fil_pieceDown(int blackorwhite, int x, int y)
 
 void CKernel::slot_fil_win(int blackorwhite)
 {
-    /*//弹窗
+    //弹窗
     QString res;
-    if( m_isHost && blackorwhite == FiveInLine::Black ){
+    if( (m_isHost && blackorwhite == FiveInLine::Black) ||
+        (!m_isHost && blackorwhite == FiveInLine::White)){
         res = QString("you win");
     }
     else{
         res = QString("you lose");
     }
-    QMessageBox::about( m_roomDialog, "提示", res );*/
+    /*if( !m_isHost && blackorwhite == FiveInLine::White ){
+        res = QString("you win");
+    }
+    else{
+        res = QString("you lose");
+    }*/
+    QMessageBox::about( m_roomDialog, "提示", res );
     //可以点准备开局
     m_roomDialog->resetAllPushButton();
     /*// 构造并发出胜利消息（由服务器转发给房间内所有人）
