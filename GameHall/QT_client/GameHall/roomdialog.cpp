@@ -70,7 +70,28 @@ void RoomDialog::setPlayerInfo(int id, QString name)
     ui->lb_icon_player2->setPixmap(QPixmap(":/images/icon_rui"));
     m_roomUserList.push_back( id );
 }
-
+/*------------------------托管------------赢麻了-------------------*/
+//time 2026.1.1
+void RoomDialog::setHostPlayByCpu(bool yes)
+{
+    if( yes ){
+        ui->pb_player1_cpu->setText( "托管中" );
+    }
+    else{
+        ui->pb_player1_cpu->setText( "托管" );
+    }
+}
+//
+void RoomDialog::setPlayerPlayByCpu(bool yes)
+{
+    if( yes ){
+        ui->pb_player2_cpu->setText( "托管中" );
+    }
+    else{
+        ui->pb_player2_cpu->setText( "托管" );
+    }
+}
+/*----------------------------------------------------------------*/
 void RoomDialog::clearRoom()
 {
     //ui
@@ -87,6 +108,14 @@ void RoomDialog::clearRoom()
     ui->pb_player2_ready->setChecked( false );
     ui->pb_player1_ready->setText("待准备");
     ui->pb_player2_ready->setText("待准备");
+    /*----------------托管------------------*/
+    //time 2026.1.1
+    ui->pb_player1_cpu->setChecked(false);
+    ui->pb_player2_cpu->setChecked(false);
+
+    ui->pb_player1_cpu->setText( "托管" );
+    ui->pb_player2_cpu->setText( "托管" );
+    /*--------------------------------------*/
     //聊天窗口清空
 
     //后台数据
@@ -104,6 +133,15 @@ void RoomDialog::resetAllPushButton()
     ui->pb_player2_ready->setChecked( false );
     ui->pb_player1_ready->setText("待准备");
     ui->pb_player2_ready->setText("待准备");
+
+    /*----------------托管------------------*/
+    //time 2026.1.1
+    ui->pb_player1_cpu->setChecked(false);
+    ui->pb_player2_cpu->setChecked(false);
+
+    ui->pb_player1_cpu->setText( "托管" );
+    ui->pb_player2_cpu->setText( "托管" );
+    /*--------------------------------------*/
 }
 
 void RoomDialog::playerLeave(int id)
@@ -138,7 +176,7 @@ void RoomDialog::setPlayerReady(int id)
         ui->pb_player1_ready->setChecked( true );
         ui->pb_player1_ready->setText( "已准备" );
     }
-    if( m_roomUserList.back() == id ){
+    if( m_roomUserList.back() == id && m_roomUserList.size() == 2 ){
         ui->pb_player2_ready->setChecked( true );
         ui->pb_player2_ready->setText( "已准备" );
     }
@@ -260,4 +298,60 @@ void RoomDialog::slot_pieceDown(int blackorwhite, int x, int y)
 {
     ui->wdg_play->slot_pieceDown( blackorwhite, x, y );
 }
+
+/*------------------------赢麻了人机-----------------------------*/
+//time 2026.1.1
+//托管第一次点击 是托管 第二次是取消托管
+void RoomDialog::on_pb_player1_cpu_clicked(bool checked)
+{
+    //判断自己 然后再执行
+    if( m_status == _host ){
+        if( ui->pb_player1_cpu->isChecked() ){
+            //托管通过网络发送 需要一个信号
+            Q_EMIT SIG_playByCpuBegin( 0x10, m_roomid, m_roomUserList.front() );
+            //托管信息发到服务器 再转回来 再改变文字 托管到托管中——不在这里完成
+
+            //电脑自动下棋
+            ui->wdg_play->setCpuColor( FiveInLine::Black );
+            //调用一次电脑下棋
+            ui->wdg_play->pieceDownByCpu();
+        }
+        else{
+            //托管通过网络发送 需要一个信号
+            Q_EMIT SIG_playByCpuEnd( 0x10, m_roomid, m_roomUserList.front() );
+            //托管信息发到服务器 再转回来 再改变文字 托管到托管中——不在这里完成
+
+            //电脑停止下棋
+            ui->wdg_play->setCpuColor( FiveInLine::None );
+        }
+    }
+}
+
+
+void RoomDialog::on_pb_player2_cpu_clicked(bool checked)
+{
+    if(m_roomUserList.size() != 2) return;
+    //判断自己 然后再执行
+    if( m_status == _player ){
+        if( ui->pb_player2_cpu->isChecked() ){
+            //托管通过网络发送 需要一个信号
+            Q_EMIT SIG_playByCpuBegin( 0x10, m_roomid, m_roomUserList.back() );
+            //托管信息发到服务器 再转回来 再改变文字 托管到托管中——不在这里完成
+
+            //电脑自动下棋
+            ui->wdg_play->setCpuColor( FiveInLine::White );
+            //调用一次电脑下棋
+            ui->wdg_play->pieceDownByCpu();
+        }
+        else{
+            //托管通过网络发送 需要一个信号
+            Q_EMIT SIG_playByCpuEnd( 0x10, m_roomid, m_roomUserList.back() );
+            //托管信息发到服务器 再转回来 再改变文字 托管到托管中——不在这里完成
+
+            //电脑停止下棋
+            ui->wdg_play->setCpuColor( FiveInLine::None );
+        }
+    }
+}
+/*------------------------赢麻了人机-----------------------------*/
 

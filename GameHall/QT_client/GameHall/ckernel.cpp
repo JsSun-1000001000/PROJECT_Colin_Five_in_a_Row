@@ -55,8 +55,8 @@ void CKernel::setNetPackFunMap()
      */
     NetPackMap(DEF_FIL_ROOM_READY  ) = &CKernel::slot_dealFilGameReadyRq;
     NetPackMap(DEF_FIL_GAME_START  ) = &CKernel::slot_dealFilGameStartRq;
-    //NetPackMap(DEF_FIL_AI_BEGIN    ) = &CKernel::slot_deal
-    //NetPackMap(DEF_FIL_AI_END      ) = &CKernel::slot_deal
+    NetPackMap(DEF_FIL_AI_BEGIN    ) = &CKernel::slot_dealFilPlayByCpuBegin;
+    NetPackMap(DEF_FIL_AI_END      ) = &CKernel::slot_dealFilPlayByCpuEnd;
     //NetPackMap(DEF_FIL_DISCARD_THIS) = &CKernel::slot_deal
     //NetPackMap(DEF_FIL_SURREND     ) = &CKernel::slot_deal
     NetPackMap(DEF_FIL_PIECEDOWN   ) = &CKernel::slot_dealFilPieceDownRq;
@@ -294,7 +294,31 @@ void CKernel::slot_fil_win(int blackorwhite)
 
     // 不在这里直接弹窗，等待服务器转发后统一由 slot_dealFilWinRq 处理显示与重置*/
 }
+/*-------------------托管--------------------------------------------------*/
+//time 2026.1.1
 
+void CKernel::slot_fil_playByCpuBegin(int zoneid, int roomid, int userid)
+{
+    //发包
+    STRU_FIL_RQ rq(DEF_FIL_AI_BEGIN);
+    rq.roomid = roomid;
+    rq.userid = userid;
+    rq.zoneid = zoneid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
+
+void CKernel::slot_fil_playByCpuEnd(int zoneid, int roomid, int userid)
+{
+    //发包
+    STRU_FIL_RQ rq(DEF_FIL_AI_END);
+    rq.roomid = roomid;
+    rq.userid = userid;
+    rq.zoneid = zoneid;
+
+    SendData( (char *)&rq, sizeof(rq) );
+}
+/*-------------------托管--------------------------------------------------*/
 //接收处理
 void CKernel::slot_ReadyData(unsigned int lSendIP, char *buf, int nlen)
 {
@@ -470,6 +494,57 @@ void CKernel::slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen)
 
 }
 
+void CKernel::slot_dealFilPlayByCpuBegin(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_FIL_RQ * rq = (STRU_FIL_RQ * )buf;
+    //成员身份
+    rq->zoneid;//根据专区看房间
+    rq->roomid;//根据房间看ui
+    if(m_id == rq->userid){
+        if(m_isHost){
+            m_roomDialog->setHostPlayByCpu(true);
+        }
+        else{
+            m_roomDialog->setPlayerPlayByCpu(true);
+        }
+    }
+    else{
+        if(m_isHost){
+            m_roomDialog->setPlayerPlayByCpu(true);
+        }
+        else{
+            m_roomDialog->setHostPlayByCpu(true);
+        }
+    }
+
+}
+
+void CKernel::slot_dealFilPlayByCpuEnd(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_FIL_RQ * rq = (STRU_FIL_RQ * )buf;
+    //成员身份
+    rq->zoneid;//根据专区看房间
+    rq->roomid;//根据房间看ui
+    if(m_id == rq->userid){
+        if(m_isHost){
+            m_roomDialog->setHostPlayByCpu(false);
+        }
+        else{
+            m_roomDialog->setPlayerPlayByCpu(false);
+        }
+    }
+    else{
+        if(m_isHost){
+            m_roomDialog->setPlayerPlayByCpu(false);
+        }
+        else{
+            m_roomDialog->setHostPlayByCpu(false);
+        }
+    }
+}
+
 
 void CKernel::SendData(char *buf, int nlen)
 {
@@ -552,6 +627,13 @@ CKernel::CKernel(QObject *parent)
             this, SLOT(slot_fil_pieceDown(int,int,int)));
     connect(m_roomDialog, SIGNAL( SIG_playerWin(int) ),
             this, SLOT(slot_fil_win(int)));
+
+    /*---------------------------托管---------------------------*/
+    connect(m_roomDialog, SIGNAL( SIG_playByCpuBegin(int,int,int) ),
+            this, SLOT(slot_fil_playByCpuBegin(int,int,int)));
+    connect(m_roomDialog, SIGNAL( SIG_playByCpuEnd(int,int,int) ),
+            this, SLOT(slot_fil_playByCpuEnd(int,int,int)));
+    /*---------------------------托管---------------------------*/
     //m_roomDialog->show();
 
 /*-----------------------------------------------------------------------------*/

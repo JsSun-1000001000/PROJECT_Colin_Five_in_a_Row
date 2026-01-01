@@ -58,7 +58,7 @@ Rotation is separate from addition to prevent recomputation.
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
-const byte MD5::PADDING[64] = { 0x80 };
+const Byte MD5::PADDING[64] = { 0x80 };
 const char MD5::HEX[16] = {  
     '0', '1', '2', '3',  
     '4', '5', '6', '7',  
@@ -90,7 +90,7 @@ MD5::MD5(ifstream &in) {
 }  
   
 /* Return the message-digest */  
-const byte* MD5::digest() {
+const Byte* MD5::digest() {
     if (!_finished) {  
         _finished = true;  
         final();  
@@ -113,12 +113,12 @@ void MD5::reset() {
   
 /* Updating the context with a input buffer. */  
 void MD5::update(const void *input, size_t length) {  
-    update((const byte*)input, length);
+    update((const Byte*)input, length);
 }  
   
 /* Updating the context with a string. */  
 void MD5::update(const string &str) {  
-    update((const byte*)str.c_str(), str.length());
+    update((const Byte*)str.c_str(), str.length());
 }  
   
 /* Updating the context with a file. */  
@@ -142,7 +142,7 @@ void MD5::update(ifstream &in) {
 operation, processing another message block, and updating the 
 context. 
 */  
-void MD5::update(const byte *input, size_t length) {
+void MD5::update(const Byte *input, size_t length) {
   
     ulong i, index, partLen;  
   
@@ -181,7 +181,7 @@ the message _digest and zeroizing the context.
 */  
 void MD5::final() {  
   
-    byte bits[8];  
+    Byte bits[8];
     ulong oldState[4];  
     ulong oldCount[2];  
     ulong index, padLen;  
@@ -210,7 +210,7 @@ void MD5::final() {
 }  
   
 /* MD5 basic transformation. Transforms _state based on block. */  
-void MD5::transform(const byte block[64]) {
+void MD5::transform(const Byte block[64]) {
   
     ulong a = _state[0], b = _state[1], c = _state[2], d = _state[3], x[16];  
   
@@ -297,20 +297,20 @@ void MD5::transform(const byte block[64]) {
 /* Encodes input (ulong) into output (md5byte). Assumes length is
 a multiple of 4. 
 */  
-void MD5::encode(const ulong *input, byte *output, size_t length) {
+void MD5::encode(const ulong *input, Byte *output, size_t length) {
   
     for(size_t i=0, j=0; j<length; i++, j+=4) {  
-        output[j]= (byte)(input[i] & 0xff);
-        output[j+1] = (byte)((input[i] >> 8) & 0xff);
-        output[j+2] = (byte)((input[i] >> 16) & 0xff);
-        output[j+3] = (byte)((input[i] >> 24) & 0xff);
+        output[j]= (Byte)(input[i] & 0xff);
+        output[j+1] = (Byte)((input[i] >> 8) & 0xff);
+        output[j+2] = (Byte)((input[i] >> 16) & 0xff);
+        output[j+3] = (Byte)((input[i] >> 24) & 0xff);
     }  
 }  
   
 /* Decodes input (md5byte) into output (ulong). Assumes length is
 a multiple of 4. 
 */  
-void MD5::decode(const byte *input, ulong *output, size_t length) {
+void MD5::decode(const Byte *input, ulong *output, size_t length) {
   
     for(size_t i=0, j=0; j<length; i++, j+=4) {    
         output[i] = ((ulong)input[j]) | (((ulong)input[j+1]) << 8) |  
@@ -319,7 +319,7 @@ void MD5::decode(const byte *input, ulong *output, size_t length) {
 }  
   
 /* Convert md5byte array to hex string. */
-string MD5::bytesToHexString(const byte *input, size_t length) {
+string MD5::bytesToHexString(const Byte *input, size_t length) {
     string str;  
     str.reserve(length << 1);  
     for(size_t i = 0; i < length; i++) {  

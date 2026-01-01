@@ -19,6 +19,9 @@ FiveInLine::FiveInLine(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //赢学人机调用
+    InitAiVector();
+
     m_pieceColor[None] = QBrush( QColor(0,0,0,0) );//最后一个0透明色
     m_pieceColor[Black] = QBrush( QColor(0,0,0) );
     m_pieceColor[White] = QBrush( QColor(255,255,255) );
@@ -254,6 +257,15 @@ bool FiveInLine::isWin(int x, int y)
 
 void FiveInLine::clear()
 {
+    /*----------------------赢麻了人机----------------------------*/
+    //time 2026.1.1 happy new year!!
+    //清空赢法棋子个数统计
+    setCpuColor( None );//默认不开人机 开就black或white
+    for( int i = 0; i < m_vecWin.size(); ++i ){
+        m_vecWin[i].clear();
+    }
+
+    /*----------------------赢麻了人机----------------------------*/
     //状态位
     m_isOver = true;
     m_blackOrWhite = Black;
@@ -291,7 +303,34 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
             Q_EMIT SIG_playerWin( getblackOrWhite() );
             QMessageBox::information( this, "游戏结束", str + "赢了！" );
         }else{
+            /*-------------电脑赢麻了----------------------*/
+            //是不是电脑回合
+            if( m_cpuColor != getblackOrWhite() ){
+                //更新玩家每种赢法 玩家的棋子个数
+                for( int i = 0; i < m_vecWin.size(); i++ ){
+                    if(m_vecWin[i].board[x][y] == 1){
+                        m_vecWin[i].playerCount += 1;
+                        m_vecWin[i].cpuCount = 100;
+                    }
+                }
+            }
+            else{
+                //更新电脑每种赢法 电脑的棋子个数
+                for( int k = 0; k < m_vecWin.size(); ++k ){
+                    if( m_vecWin[k].board[x][y] == 1 ){
+                        m_vecWin[k].cpuCount += 1;
+                        m_vecWin[k].playerCount = 100;
+                    }
+                }
+            }
+            //更换回合
             changeBlackAndWhite();
+            //判断是否是电脑回合 电脑下棋
+            if( m_cpuColor == getblackOrWhite() ){
+                pieceDownByCpu();
+            }
+            /*-----------赢麻了AI-----------------------*/
+            //changeBlackAndWhite();
         }
     }
 }
@@ -300,4 +339,163 @@ void FiveInLine::slot_startGame()
 {
     clear();
     m_isOver = false;
+}
+/*---------------------五子棋赢麻了人机ai--------------------------------*/
+//time 2026.1.1
+//初始化所有赢法
+void FiveInLine::InitAiVector()
+{
+    //躺着赢
+    for( int y = 0; y < FIL_ROWS; y++ ){
+        for( int x = 0; x < FIL_COLS - 4; x++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x+k][y] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //站着赢
+    for( int x = 0; x < FIL_COLS; x++ ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //右斜着赢/
+    for( int x = FIL_COLS - 1; x >= 4; x-- ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x-k][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    //\左斜着赢
+    for( int x = 0; x < FIL_COLS - 4; x++ ){
+        for( int y = 0; y < FIL_ROWS - 4; y++ ){
+            stru_win w;
+            for( int k = 0; k < 5; k++ ){
+                //x+y y
+                w.board[x+k][y+k] = 1;
+            }
+            m_vecWin.push_back(w);
+        }
+    }
+    qDebug()<<__func__;
+}
+//电脑落子 根据每种赢法 棋子的个数
+//给每一个无子的位置估分 得到所有的最优值 然后得到一个坐标
+void FiveInLine::pieceDownByCpu()
+{
+    if(m_isOver) return;
+    int x = 0, y = 0, k = 0;
+    int u = 0, v = 0;//最优目标坐标
+    int MyScore[FIL_COLS][FIL_ROWS] = {};//记录玩家所有位置的分数
+    int CpuScore[FIL_COLS][FIL_ROWS] = {};//记录电脑所有位置的分数
+
+    int max = 0;//最高分数
+    //估分 找到没有子的点 看每种赢法对应棋子的个数 进行这个点的分数计算
+    for( x = 0; x < FIL_COLS; ++x){
+        for( y = 0; y < FIL_ROWS; ++y ){
+            if( m_board[x][y] == None ){
+                //遍历所有赢法
+                for( k = 0; k < m_vecWin.size(); ++k ){
+                    //评估玩家在x y 分数
+                    if( m_vecWin[k].board[x][y] == 1 ){
+                        //根据该赢法 棋子个数
+                        switch( m_vecWin[k].playerCount ){
+                        case 1: MyScore[x][y] += 200;
+                            break;
+                        case 2: MyScore[x][y] += 400;
+                            break;
+                        case 3: MyScore[x][y] += 2000;
+                            break;
+                        case 4: MyScore[x][y] += 10000;
+                            break;
+                        }
+                    }
+                    //评估电脑在x y分数
+                    if( m_vecWin[k].board[x][y] == 1 ){
+                        //根据该赢法 棋子个数
+                        switch( m_vecWin[k].cpuCount ){
+                        case 1: CpuScore[x][y] += 220;
+                            break;
+                        case 2: CpuScore[x][y] += 420;
+                            break;
+                        case 3: CpuScore[x][y] += 4100;
+                            break;
+                        case 4: CpuScore[x][y] += 200000;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //第二种方法 和第一种没什么区别
+    //int a = 0, b = 0;
+    //int maxCpu;
+    //估分之后找最优点
+    for( x = 0; x < FIL_COLS; ++x){
+        for( y = 0; y < FIL_ROWS; ++y){
+            if( m_board[x][y] == None ){
+                //先看玩家 MyScore看作是防守 cpu看作是进攻
+                if( MyScore[x][y] > max ){
+                    max = MyScore[x][y];
+                    u = x;
+                    v = y;
+                }
+                else if( MyScore[x][y] == max){
+                    if( CpuScore[x][y] > CpuScore[u][v] ){
+                        u = x;
+                        v = y;
+                    }
+                }
+                //再看电脑
+                if( CpuScore[x][y] > max ){
+                    max = CpuScore[x][y];
+                    u = x;
+                    v = y;
+                }
+                else if( CpuScore[x][y] == max){
+                    if( MyScore[x][y] > MyScore[u][v] ){
+                        u = x;
+                        v = y;
+                    }
+                }
+                /*第二种方法 和第一种没什么区别
+                 * if(MyScore[x][y]>max){
+                    max = MyScore[x][y];
+                    u = x;
+                    v = y;
+                }
+                if(CpuScore[x][y]>maxCpu){
+                    maxCpu = CpuScore[x][y];
+                    a = x;
+                    b = y;
+                }*/
+            }
+        }
+    }
+    /*第二种方法 和第一种没什么区别
+     * if(max <= maxCpu){
+        u = a;
+        v = b;
+    }*/
+    //见更新电脑的每种赢法
+
+    //得到最优目标坐标
+    Q_EMIT SIG_pieceDown( getblackOrWhite(), u, v );
+}
+void FiveInLine::setCpuColor(int newCpuColor)
+{
+    m_cpuColor = newCpuColor;
 }

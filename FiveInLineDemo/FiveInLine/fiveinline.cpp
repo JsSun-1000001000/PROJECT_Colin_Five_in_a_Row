@@ -253,6 +253,10 @@ bool FiveInLine::isWin(int x, int y)
 
 void FiveInLine::clear()
 {
+    //清空赢法棋子个数统计
+    for( int i = 0; i < m_vecWin.size(); ++i ){
+        m_vecWin[i].clear();
+    }
     //状态位
     m_isOver = true;
     m_blackOrWhite = Black;
@@ -364,6 +368,9 @@ void FiveInLine::pieceDownByCpu()
             }
         }
     }
+    //第二种方法 和第一种没什么区别
+    //int a = 0, b = 0;
+    //int maxCpu;
     //估分之后找最优点
     for( x = 0; x < FIL_COLS; ++x){
         for( y = 0; y < FIL_ROWS; ++y){
@@ -392,10 +399,25 @@ void FiveInLine::pieceDownByCpu()
                         v = y;
                     }
                 }
+                /*第二种方法 和第一种没什么区别
+                 * if(MyScore[x][y]>max){
+                    max = MyScore[x][y];
+                    u = x;
+                    v = y;
+                }
+                if(CpuScore[x][y]>maxCpu){
+                    maxCpu = CpuScore[x][y];
+                    a = x;
+                    b = y;
+                }*/
             }
         }
     }
-
+    /*第二种方法 和第一种没什么区别
+     * if(max <= maxCpu){
+        u = a;
+        v = b;
+    }*/
     //见更新电脑的每种赢法
 
     //得到最优目标坐标

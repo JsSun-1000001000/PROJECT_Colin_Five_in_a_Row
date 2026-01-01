@@ -40,6 +40,27 @@ QT_END_NAMESPACE
 #include <QPaintEvent>
 #include <QTimer>
 
+/*---------------------赢麻了ai----------------------*/
+//time 2026.1.1 happy new year!!
+
+#include <vector>
+using namespace std;
+struct stru_win{
+    stru_win():board( FIL_COLS, vector<int>(FIL_ROWS, 0) ),
+        playerCount(0),cpuCount(0){
+
+    }
+    void clear(){
+        playerCount = 0;
+        cpuCount = 0;
+    }
+    vector< vector<int> > board;//胜利的棋子布局
+    int playerCount;//该赢法玩家的棋子个数
+    int cpuCount;//该赢法电脑的棋子个数
+};
+
+/*--------------------------------------------------*/
+
 class FiveInLine : public QWidget
 {
     Q_OBJECT
@@ -72,7 +93,18 @@ public:
     bool isWin( int x, int y );
     //清空
     void clear();
-
+    /*-----------------------------------------------------------*/
+    /*
+     * time 2025.12.31
+     */
+    //初始化所有赢法——赢学
+    void InitAiVector();
+    //电脑落子
+    void pieceDownByCpu();
+    //设置电脑身份
+    void setCpuColor(int newCpuColor);
+    /*-----------------------------------------------------------*/
+    //设置自己身份
     void setSelfStatus(int _status);
     //黑白子枚举
     enum ENUM_BLACK_OR_WHITEP{ None = 0, Black = 1, White = 2 };
@@ -107,6 +139,16 @@ private:
 
     //网络版本 玩家身份 不是自己回合是不能动的
     int m_status;
+    /*-----------------------------------------------------------*/
+    /*
+     * time 2026.1.1 Happy new year!!
+     * 赢麻了ai
+     */
+    //赢法数组
+    vector<stru_win> m_vecWin;
+    //电脑回合
+    int m_cpuColor;
+    /*-----------------------------------------------------------*/
 
 };
 #endif // FIVEINLINE_H

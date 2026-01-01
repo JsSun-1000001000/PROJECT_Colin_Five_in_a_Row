@@ -20,6 +20,13 @@ signals:
     void SIG_pieceDown( int blackorwhite, int x, int y);
     void SIG_playerWin( int blackorwhite );
 
+    /*-----------------赢麻了-----------------------*/
+    //time 2026.1.1
+    void SIG_playByCpuBegin(int zoneid, int roomid, int userid);
+    void SIG_playByCpuEnd(int zoneid, int roomid, int userid);
+
+    /*-----------------赢麻了-----------------------*/
+
 public:
     explicit RoomDialog(QWidget *parent = nullptr);
     ~RoomDialog();
@@ -32,6 +39,13 @@ public:
     void setUserStatus( int status );
     void setHostInfo( int id, QString name );
     void setPlayerInfo( int id, QString name);
+    /*------------------托管--赢麻了----------------------*/
+    //time 2026.1.1
+    //用于kernel去调用
+    void setHostPlayByCpu( bool yes );
+    void setPlayerPlayByCpu( bool yes );
+
+    /*---------------------------------------------------*/
     void clearRoom();
     void resetAllPushButton(  );
     void playerLeave(int id);
@@ -49,6 +63,10 @@ private slots:
     void on_pb_player2_ready_clicked(bool checked);
 
     void on_pb_start_clicked();
+
+    void on_pb_player1_cpu_clicked(bool checked);
+
+    void on_pb_player2_cpu_clicked(bool checked);
 
 public slots:
     void slot_pieceDown( int blackorwhite, int x, int y );

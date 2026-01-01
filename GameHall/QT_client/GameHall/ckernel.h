@@ -57,6 +57,13 @@ public slots:
     void slot_fil_pieceDown( int blackorwhite, int x, int y);
     //输赢
     void slot_fil_win( int blackorwhite );
+    /*------------------托管 人机---------------------------------*/
+
+    void slot_fil_playByCpuBegin(int zoneid, int roomid, int userid);
+
+    void slot_fil_playByCpuEnd(int zoneid, int roomid, int userid);
+
+    /*------------------------------------------------------------*/
 
     void slot_ReadyData( unsigned int lSendIP , char* buf , int nlen );
     //网络处理
@@ -70,6 +77,10 @@ public slots:
     void slot_dealFilGameStartRq(unsigned int lSendIP, char *buf, int nlen);
     void slot_dealFilPieceDownRq(unsigned int lSendIP, char *buf, int nlen);
     void slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen);
+    /*------------------网络处理——托管处理--------------------------------*/
+    void slot_dealFilPlayByCpuBegin(unsigned int lSendIP, char *buf, int nlen);
+    void slot_dealFilPlayByCpuEnd(unsigned int lSendIP, char *buf, int nlen);
+    /*-------------------------------------------------------------------*/
 
 private:
     void setNetPackFunMap();

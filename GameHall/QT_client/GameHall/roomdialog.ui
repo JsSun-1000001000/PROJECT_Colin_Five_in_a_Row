@@ -349,9 +349,9 @@
    <property name="geometry">
     <rect>
      <x>760</x>
-     <y>110</y>
+     <y>100</y>
      <width>111</width>
-     <height>91</height>
+     <height>109</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="player1pblayout">
@@ -386,30 +386,94 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QPushButton" name="pb_player1_cpu">
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>托管</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="pb_player2_ready">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>760</x>
-     <y>290</y>
+     <y>261</y>
      <width>111</width>
-     <height>25</height>
+     <height>81</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <family>Consolas</family>
-     <pointsize>16</pointsize>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>待准备</string>
-   </property>
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
+   <layout class="QGridLayout" name="player2Layout">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pb_player2_ready">
+      <property name="minimumSize">
+       <size>
+        <width>109</width>
+        <height>33</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>109</width>
+        <height>33</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>待准备</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pb_player2_cpu">
+      <property name="minimumSize">
+       <size>
+        <width>109</width>
+        <height>33</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>109</width>
+        <height>33</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>16</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>托管</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <customwidgets>
