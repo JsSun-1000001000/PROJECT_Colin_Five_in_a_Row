@@ -13,6 +13,7 @@ FiveInLine::FiveInLine(QWidget *parent)
     , m_moveFlag( false )
     , m_board( FIL_COLS, std::vector<int>( FIL_ROWS, 0 ) )
     , m_isOver(false)
+    , m_colorCounter( DEFAULT_COUNTER )
 
     //vector 初始化 有参构造 参数 多长 初值多少
 {
@@ -35,7 +36,11 @@ FiveInLine::FiveInLine(QWidget *parent)
              this, SLOT( slot_pieceDown( int, int, int ) ) );
 
     //cpu颜色
-    setCpuColor( White );
+    setCpuColor( None );
+
+    connect( &m_countTimer, SIGNAL( timeout() ),
+            this, SLOT( slot_countTimer() ) );
+
     slot_startGame();
 }
 
@@ -269,6 +274,10 @@ void FiveInLine::clear()
     }
     ui->lb_winner->setText("");
     ui->lb_color->setText("黑子回合");
+
+    m_colorCounter = DEFAULT_COUNTER ;
+    ui->lb_timer->show();
+    m_countTimer.start(1000);
 }
 //初始化所有赢法
 void FiveInLine::InitAiVector()
@@ -436,8 +445,11 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
 
         //更新该点棋子颜色后 判断输赢
         if( isWin( x, y ) ){
+            m_countTimer.stop();
+            ui->lb_timer->hide();
             QString str = ( blackorwhite == Black ) ? "黑子" : "白子";
             ui->lb_winner->setText( str + "赢了！" );
+
             QMessageBox::information( this, "游戏结束", str + "赢了！" );
         }else{
             /*-------------电脑赢麻了----------------------*/
@@ -460,6 +472,7 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
                     }
                 }
             }
+            m_colorCounter = DEFAULT_COUNTER;
             //更换回合
             changeBlackAndWhite();
             //判断是否是电脑回合 电脑下棋
@@ -475,6 +488,23 @@ void FiveInLine::slot_startGame()
 {
     clear();
     m_isOver = false;
+}
+
+//每秒更新一次
+void FiveInLine::slot_countTimer()
+{
+    m_colorCounter--;
+    if( m_colorCounter <= 0){
+        //文本更新
+        ui->lb_timer->setText( QString("%1秒").arg(m_colorCounter, 2, 10, QChar('0')) );
+        //切换回合
+        changeBlackAndWhite();
+        m_colorCounter = DEFAULT_COUNTER;
+        return;
+    }
+    //界面文本更新
+    ui->lb_timer->setText( QString("%1秒").arg(m_colorCounter, 2, 10, QChar('0')));
+
 }
 
 void FiveInLine::setCpuColor(int newCpuColor)

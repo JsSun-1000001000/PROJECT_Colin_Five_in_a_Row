@@ -67,6 +67,20 @@
      </widget>
     </item>
     <item>
+     <widget class="QLabel" name="lb_timer">
+      <property name="font">
+       <font>
+        <family>Consolas</family>
+        <pointsize>14</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>30秒</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="lb_winner">
       <property name="font">
        <font>

@@ -58,6 +58,8 @@ struct stru_win{
     int cpuCount;//该赢法电脑的棋子个数
 };
 
+#define DEFAULT_COUNTER 31
+
 /*--------------------------------------------------*/
 
 class FiveInLine : public QWidget
@@ -106,6 +108,7 @@ public:
 public slots:
     void slot_pieceDown( int blackorwhite, int x, int y );
     void slot_startGame();
+    void slot_countTimer();
 
 private:
     Ui::FiveInLine *ui;
@@ -140,6 +143,10 @@ private:
     vector<stru_win> m_vecWin;
     //电脑回合
     int m_cpuColor;
+    //每秒定时
+    QTimer m_countTimer;
+    //剩余时间计数器
+    int m_colorCounter;
     /*-----------------------------------------------------------*/
 };
 #endif // FIVEINLINE_H
