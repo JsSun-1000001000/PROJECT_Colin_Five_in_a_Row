@@ -39,6 +39,7 @@ QT_END_NAMESPACE
 #include <vector>
 #include <QPaintEvent>
 #include <QTimer>
+#include <unordered_map>
 /*---------------------赢麻了ai----------------------*/
 //time 2025.12.31
 
@@ -181,6 +182,14 @@ private:
     int evalueteBoard( int color, vector<vector<int> >& board );
     //总体的棋面分析
     int evalueteBoard( vector<vector<int> >& board );
+
+    //哈希算法 记录棋面分数 已经有的不会再计算
+    //思路将 棋面信息作为key 然后得分记为value 棋面信息通过每个位置是012 的这样的字符表示
+    //形成一个字符串
+    //那么 长度就是15*15 = 225 那么长
+    string getBoardHash( vector<vector<int> > & board);
+    unordered_map<string, int> evalueteCache;
+    //
     /*-----------------------------------------------------------*/
 
 };

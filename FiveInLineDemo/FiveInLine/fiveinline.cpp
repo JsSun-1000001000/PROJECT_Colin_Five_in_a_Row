@@ -623,7 +623,20 @@ void FiveInLine::findBestMove(int &bestX, int &bestY, int player, int depth)
 
     //获取要看的点
     getNeedHandlePos(copyEveryStep, candidates, copyBoard );
+    /*---------------优化--------------------------*/
+    //排序 用深度为1 的评估得分排序 先算好的 这样剪枝的可能性大大增强
+    sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
+        copyBoard[a.first][a.second] = player;
+        int scoreA = evalueteBoard(copyBoard);
+        copyBoard[a.first][a.second] = None;
 
+        copyBoard[b.first][b.second] = player;
+        int scoreB = evalueteBoard(copyBoard);
+        copyBoard[b.first][b.second] = None;
+
+        return scoreA > scoreB;//降序排列 优先看高分
+    });
+    /*---------------------------------------------*/
     //遍历所有可能位置
     for (auto & pos : candidates){
         int x = pos.first;
@@ -720,6 +733,24 @@ int FiveInLine::minmax(vector<vector<int> > &copyBoard,
     getNeedHandlePos(copyEveryStep, candidates, copyBoard );
 
     if(candidates.empty()) return 0;
+    //对于max层才能这样看 min层要升序 不过会崩溃暂时不知道什么原因 先不看
+    if(isMaximizing){
+        //排序 用深度为1 的评估得分排序 先算好的 这样剪枝的可能性大大增强
+        sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
+            copyBoard[a.first][a.second] = player;
+            int scoreA = evalueteBoard(copyBoard);
+            copyBoard[a.first][a.second] = None;
+
+            copyBoard[b.first][b.second] = player;
+            int scoreB = evalueteBoard(copyBoard);
+            copyBoard[b.first][b.second] = None;
+
+            return scoreA > scoreB;//降序排列 优先看高分
+        });
+    }
+    /*else{
+        //todo 会崩溃先不看了
+    }*/
 
     //遍历所有可能位置
     for(auto & pos : candidates){
@@ -869,7 +900,18 @@ int FiveInLine::evalueteBoard(vector<vector<int> > &board)
     //放引用就可以 值传递容易栈溢出
     int white = evalueteBoard( White, board );
     int black = evalueteBoard( Black, board );
-    return white=black;
+    return white - black;
+}
+
+string FiveInLine::getBoardHash(vector<vector<int> > &board)
+{
+    string hash;
+    for( int i = 0;i < FIL_COLS; ++i){
+        for( int j = 0; j < FIL_ROWS; ++j){
+            hash += to_string(board[i][j]);
+        }
+    }
+    return hash;
 }
 
 void FiveInLine::setCpuColor(int newCpuColor)
