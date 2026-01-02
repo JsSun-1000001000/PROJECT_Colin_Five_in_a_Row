@@ -10,6 +10,7 @@
 #include "logindialog.h"
 #include "fiveinlinezone.h"
 #include "roomdialog.h"
+#include <QTimer>
 
 //成员函数指针类型
 class CKernel;
@@ -47,6 +48,10 @@ public slots:
      * definite slot_joinRoom(int)
      */
     void slot_joinRoom(int roomid);
+
+    //获取专区每个房间玩家数
+    void slot_roomInfoInZone();
+
     /*
      * time 2025.12.30
      * 准备和开局
@@ -77,6 +82,8 @@ public slots:
     void slot_dealFilGameStartRq(unsigned int lSendIP, char *buf, int nlen);
     void slot_dealFilPieceDownRq(unsigned int lSendIP, char *buf, int nlen);
     void slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen);
+    void slot_dealZoneRoomInfo(unsigned int lSendIP, char *buf, int nlen);
+
     /*------------------网络处理——托管处理--------------------------------*/
     void slot_dealFilPlayByCpuBegin(unsigned int lSendIP, char *buf, int nlen);
     void slot_dealFilPlayByCpuEnd(unsigned int lSendIP, char *buf, int nlen);
@@ -109,6 +116,8 @@ private:
     bool m_isHost;
     QString m_userName;
     char m_serverIP[20];
+    //单位时间内获取专区内房间内玩家个数
+    QTimer m_rqTimer;
 };
 
 #endif // CKERNEL_H

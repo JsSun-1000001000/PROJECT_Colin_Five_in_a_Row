@@ -21,11 +21,15 @@ public:
     ~FiveInLineZone();
 
     void closeEvent(QCloseEvent * event);
+    //使用引用
+    std::vector<RoomItem*> &getvecRoomItem();
 
 private:
     Ui::FiveInLineZone *ui;
 
     QGridLayout * m_layout;
+
+    std::vector<RoomItem *> m_vecRoomItem;
 };
 
 #endif // FIVEINLINEZONE_H

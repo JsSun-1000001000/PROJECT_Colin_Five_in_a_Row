@@ -34,3 +34,24 @@ void RoomItem::on_pb_join_clicked()
     Q_EMIT SIG_JoinRoom( m_roomid );
 }
 
+void RoomItem::setRoomItem(int num)
+{
+    QPixmap ready = QPixmap(":/images/icon_rui.jpg");
+    QPixmap wait = QPixmap(":/Resource2/icon/slotwait.jpg");
+
+    switch( num ){
+    case 0:
+        ui->lb_player1->setPixmap( wait );
+        ui->lb_player2->setPixmap( wait );
+        break;
+    case 1:
+        ui->lb_player1->setPixmap( ready );
+        ui->lb_player2->setPixmap( wait );
+        break;
+    case 2:
+        ui->lb_player1->setPixmap( ready );
+        ui->lb_player2->setPixmap( ready );
+        break;
+    }
+}
+

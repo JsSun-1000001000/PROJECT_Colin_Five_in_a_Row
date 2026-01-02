@@ -29,8 +29,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">
-background-image: url(:/images/fiveinLine.jpg);</string>
+   <string notr="true"/>
   </property>
   <widget class="QPushButton" name="pb_join">
    <property name="geometry">
@@ -107,7 +106,7 @@ background-image: url(:/images/fiveinLine.jpg);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgb(255, 0, 0);
+    <string notr="true">
 </string>
    </property>
    <property name="text">
@@ -130,7 +129,7 @@ background-image: url(:/images/fiveinLine.jpg);</string>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color: rgb(0, 85, 255);
+    <string notr="true">
 
 </string>
    </property>

@@ -6,7 +6,7 @@
 namespace Ui {
 class RoomItem;
 }
-
+class CKernel;
 class RoomItem : public QDialog
 {
     Q_OBJECT
@@ -26,10 +26,13 @@ signals:
 private slots:
     void on_pb_join_clicked();
 
+    void setRoomItem(int num);
+
 private:
     Ui::RoomItem *ui;
     int m_roomid;
 
+    friend class CKernel;
 };
 
 #endif // ROOMITEM_H

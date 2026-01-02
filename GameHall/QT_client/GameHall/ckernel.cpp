@@ -50,6 +50,10 @@ void CKernel::setNetPackFunMap()
      */
     NetPackMap(DEF_LEAVE_ROOM_RQ) = &CKernel::slot_dealLeaveRoomRq;
     /*
+     * time 2026.1.1
+     */
+    NetPackMap(DEF_ZONE_ROOM_INFO) = &CKernel::slot_dealZoneRoomInfo;
+    /*
      * time 2025.12.30
      * game
      */
@@ -145,6 +149,7 @@ void CKernel::slot_registerCommit(QString tel, QString password, QString name)
  */
 void CKernel::slot_leaveZone()
 {
+    m_rqTimer.stop();
     //成员属性修改
     m_zoneid = 0;
     //请求
@@ -161,6 +166,7 @@ void CKernel::slot_leaveZone()
  //提交加入分区
 void CKernel::slot_joinZone(int zoneid)
 {
+    m_rqTimer.start(1000);
     /*
      * time 2025.12.27
      * member changes the property
@@ -226,6 +232,15 @@ void CKernel::slot_joinRoom(int roomid)
     rq.roomid = roomid;
 
     SendData( (char *)&rq, sizeof(rq) );
+}
+
+void CKernel::slot_roomInfoInZone()
+{
+    //发请求
+    STRU_ZONE_INFO_RQ rq;
+    rq.zoneid = m_zoneid;
+
+    SendData( (char*)&rq, sizeof(rq) );
 }
 
 //五子棋准备
@@ -494,6 +509,19 @@ void CKernel::slot_dealFilWinRq(unsigned int lSendIP, char *buf, int nlen)
 
 }
 
+void CKernel::slot_dealZoneRoomInfo(unsigned int lSendIP, char *buf, int nlen)
+{
+    //拆包
+    STRU_ZONE_ROOM_INFO * rq = (STRU_ZONE_ROOM_INFO *)buf;
+    //根据专区找到对应窗口
+
+    //根据数组 更新ui
+    std::vector<RoomItem*>& vec = m_fiveInLineZone->getvecRoomItem();
+    for(int i = 1; i< vec.size(); ++i){
+        vec[i]->setRoomItem(rq->roomInfo[i]);
+    }
+}
+
 void CKernel::slot_dealFilPlayByCpuBegin(unsigned int lSendIP, char *buf, int nlen)
 {
     //拆包
@@ -649,6 +677,8 @@ CKernel::CKernel(QObject *parent)
     //故，这个区域一定是连续的，不能定义string，qstring这种
     //m_client->SendData(0,(char*)&rq,sizeof(rq));
 
+    connect( &m_rqTimer, SIGNAL(timeout),
+            this, SLOT(slot_roomInfoInZone()) );
 
 
 }

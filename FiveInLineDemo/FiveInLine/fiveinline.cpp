@@ -36,10 +36,10 @@ FiveInLine::FiveInLine(QWidget *parent)
              this, SLOT( slot_pieceDown( int, int, int ) ) );
 
     //cpu颜色
-    setCpuColor( None );
+    setCpuColor( White );
 
-    connect( &m_countTimer, SIGNAL( timeout() ),
-            this, SLOT( slot_countTimer() ) );
+    //connect( &m_countTimer, SIGNAL( timeout() ),
+    //        this, SLOT( slot_countTimer() ) );
 
     slot_startGame();
 }
@@ -113,6 +113,27 @@ void FiveInLine::paintEvent(QPaintEvent *event)
                        m_movePoint.y() );
         painter.drawEllipse( center, FIL_PIECE_SIZE / 2, FIL_PIECE_SIZE / 2 );
     }
+    /*-----------------------绘制上一次落子的位置-------------------------------*/
+    //time 2026.1.2
+    if(!m_lastPos.isNull()){
+        painter.setBrush(QBrush(QColor(0,250,0)));//通过画刷设置颜色
+        int x1 = FIL_MARGIN_WIDTH + FIL_SPACE + FIL_SPACE * m_lastPos.x() - FIL_PIECE_SIZE / 2;//左上
+        int y1 = FIL_MARGIN_HEIGHT + FIL_SPACE + FIL_SPACE * m_lastPos.y() - FIL_PIECE_SIZE / 2;
+
+        int x2 = x1 + FIL_PIECE_SIZE;
+        int y2 = y1;
+
+        int x3 = x1;//左下
+        int y3 = y1 + FIL_PIECE_SIZE;
+
+        int x4 = x2;//右下
+        int y4 = y3;
+
+        painter.drawLine(QPoint(x1,y1),QPoint(x2,y2));
+        painter.drawLine(QPoint(x1,y1),QPoint(x3,y3));
+        painter.drawLine(QPoint(x2,y2),QPoint(x4,y4));
+        painter.drawLine(QPoint(x3,y3),QPoint(x4,y4));
+    }
     event->accept();
 }
 
@@ -129,6 +150,11 @@ void FiveInLine::mousePressEvent(QMouseEvent *event)
 
     //加入结束判断
     if( m_isOver ) goto quit;
+    /*-------------高级ai--------------------*/
+    if( getblackOrWhite() == White){
+        goto quit;
+    }
+    /*---------------------------------------*/
     //点击状态
     m_moveFlag = true;
 
@@ -157,6 +183,11 @@ void FiveInLine::mouseReleaseEvent(QMouseEvent *event)
     float fy = (float)event->pos().y();
 
     if( m_isOver ) goto quit;
+    /*-------------高级ai--------------------*/
+    if( getblackOrWhite() == White){
+        goto quit;
+    }
+    /*---------------------------------------*/
 
     fx = ( fx - FIL_MARGIN_WIDTH - FIL_SPACE ) / FIL_SPACE;
     fy = ( fy - FIL_MARGIN_HEIGHT - FIL_SPACE ) / FIL_SPACE;
@@ -443,6 +474,9 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
     if( m_board[x][y] == None ){
         m_board[x][y] = blackorwhite;
 
+        m_lastPos = QPoint(x,y);
+        m_everyStepPos.push_back({x,y});
+
         //更新该点棋子颜色后 判断输赢
         if( isWin( x, y ) ){
             m_countTimer.stop();
@@ -477,7 +511,11 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
             changeBlackAndWhite();
             //判断是否是电脑回合 电脑下棋
             if( m_cpuColor == getblackOrWhite() ){
+#ifndef DEF_ALPHA_BETA
                 pieceDownByCpu();
+#else
+                pieceDownByBetterCpu();
+#endif
             }
             /*-----------赢麻了AI-----------------------*/
         }
@@ -505,6 +543,333 @@ void FiveInLine::slot_countTimer()
     //界面文本更新
     ui->lb_timer->setText( QString("%1秒").arg(m_colorCounter, 2, 10, QChar('0')));
 
+}
+
+//不使用现在的棋盘 使用临时棋盘
+bool FiveInLine::isWin(int x, int y, vector<vector<int> > & board)
+{
+    //看四条线八个方向 同色棋子个数
+    int count = 1;//初始个数为1 包括自己
+    //循环看四条线
+    for( int dr = d_z; dr < d_count; dr += 2 ){
+        for(int i = 1; i <= 4; ++i){
+            //获取偏移后的棋子坐标
+            int ix = dx[ dr ]*i + x;
+            int iy = dy[ dr ]*i + y;
+            //判断是否出界
+            if( isCrossLine( ix, iy ) ){
+                break;
+            }
+            //看是否同色
+            if( board[ix][iy] == board[x][y] ){
+                count++;
+            }else{
+                break;
+            }
+        }
+        for(int i = 1; i <= 4; ++i){
+            //获取偏移后的棋子坐标
+            int ix = dx[ dr + 1 ]*i + x;
+            int iy = dy[ dr + 1 ]*i + y;
+            //判断是否出界
+            if( isCrossLine( ix, iy ) ){
+                break;
+            }
+            //看是否同色
+            if( board[ix][iy] == board[x][y] ){
+                count++;
+            }else{
+                break;
+            }
+        }
+        if( count >= 5 ){//不看其他的了
+            break;
+        }
+        else{
+            count = 1;
+        }
+    }
+    if( count >= 5 ){
+        //结束 //不能结束
+        return true;
+    }
+    return false;
+}
+
+void FiveInLine::pieceDownByBetterCpu()
+{
+    if(m_isOver) return;
+    int bestX = -1;
+    int bestY = -1;
+
+    findBestMove( bestX, bestY, getblackOrWhite(), MAX_DEPTH );
+
+    if(bestX != -1 && bestY != -1){
+        //找到最佳点 落子
+        emit SIG_pieceDown( getblackOrWhite(), bestX, bestY );
+    }
+}
+
+void FiveInLine::findBestMove(int &bestX, int &bestY, int player, int depth)
+{
+    //上来先是max层
+    int bestValue = INT_MIN;
+    bestX = -1;
+    bestX = -1;
+
+    vector<pair<int, int> > candidates;
+    vector<pair<int, int> > copyEveryStep = m_everyStepPos;//避免出现问题 使用拷贝的
+    vector<vector<int> > copyBoard = m_board;//同理棋盘也是
+
+    //获取要看的点
+    getNeedHandlePos(copyEveryStep, candidates, copyBoard );
+
+    //遍历所有可能位置
+    for (auto & pos : candidates){
+        int x = pos.first;
+        int y = pos.second;
+        //这个位置之所以能下子 因为是空位置
+        //尝试在该位置下子 如果直接能获得胜利 那么就返回
+        copyBoard[x][y] = player;
+        if(isWin(x,y,copyBoard)){
+            bestX = x;
+            bestY = y;
+            return;
+        }
+        //尝试在该位置 敌人下子 如果能获得胜利 那么也返回
+        copyBoard[x][y] = (player == Black)?White:Black;
+        if(isWin(x, y, copyBoard)){
+            bestX = x;
+            bestY = y;
+            return;
+        }
+        //切换回来 开始 搜索
+        copyBoard[x][y] = player;
+        copyEveryStep.push_back({x,y});
+        //使用极大值极小值搜索配合α-β剪枝 先看min层
+        int moveValue = minmax( copyBoard,
+                               copyEveryStep,
+                               depth - 1,
+                               INT_MIN,
+                               INT_MAX,
+                               false,
+                               player);
+        //dfs 撤销该点落子
+        copyBoard[x][y] = None;
+        copyEveryStep.pop_back();
+
+        if(moveValue > bestValue){
+            bestValue = moveValue;
+            bestX = x;
+            bestY = y;
+        }
+    }
+}
+#include <unordered_set>
+void FiveInLine::getNeedHandlePos(vector<pair<int, int> > &copyEveryStep,
+                                  vector<pair<int, int> > &candidates,
+                                  vector<vector<int> > &board)
+{
+    //根据历史下棋位置 找附近1个位置 也就是3*3的位置
+    //去重添加到数组中 最好的方式是最近下的先添加
+    unordered_set<int> unique;
+    //使用反向迭代器 反向遍历
+    for( auto ite = copyEveryStep.rbegin(); ite != copyEveryStep.rend(); ++ite){
+        auto & pos = *ite;
+        int x = pos.first;
+        int y = pos.second;
+        for(int i = -1; i <= 1; i++){
+            for(int j = -1;j <= 1; ++j){
+                if(i == 0 && j == 0){
+                    continue;
+                }
+                int nx = x+i;
+                int ny = y+j;
+                if(nx<0 || nx>=FIL_COLS || ny<0 || ny>=FIL_ROWS) continue;
+                if(board[ nx ][ ny ] != None) continue;//只看空白点
+
+                //去重
+                int key = nx * 100 + ny;//nx ny不会超过15
+                if(unique.count(key) == 0){//没有
+                    unique.insert(key);
+                    candidates.push_back({nx,ny});
+                }
+
+            }
+        }
+    }
+}
+
+int FiveInLine::minmax(vector<vector<int> > &copyBoard,
+                       vector<pair<int, int> > &copyEveryStep,
+                       int depth, int alpha, int beta,
+                       bool isMaximizing, int player)
+{
+    //其实本质上是dfs 只是max层 min层 取子节点的min值
+    //分别对应 ai 最大化自己的得分 以及玩家最小化 ai得分
+    //一会实现剪枝
+    //递归终点 评估棋盘
+    if(depth == 0){
+        //评估棋盘 todo
+        return evalueteBoard(copyBoard);
+    }
+    int bestValue = isMaximizing ? INT_MIN : INT_MAX;
+    int opponent = (player == Black) ? White : Black;
+
+    vector<pair<int, int> > candidates;
+    getNeedHandlePos(copyEveryStep, candidates, copyBoard );
+
+    if(candidates.empty()) return 0;
+
+    //遍历所有可能位置
+    for(auto & pos : candidates){
+        int x = pos.first;
+        int y = pos.second;
+
+        //逻辑和 findBestMove 类似
+        //尝试落子
+        copyBoard[x][y] = isMaximizing ? player : opponent;
+        copyEveryStep.push_back({x,y});
+
+        //检查是否获胜
+        bool win = isWin(x, y, copyBoard);
+        if(win){
+            //返回不需要继续搜索
+            copyBoard[x][y] = None;
+            copyEveryStep.pop_back();
+            return isMaximizing ? 1000000 : -1000000;//其实就是正无穷和负无穷
+        }
+        //dfs并撤销
+        int value = minmax( copyBoard,
+                           copyEveryStep,
+                           depth-1,
+                           alpha,
+                           beta,
+                           !isMaximizing,
+                           player);
+        //撤销
+        copyBoard[x][y] = None;
+        copyEveryStep.pop_back();
+
+        //更新最佳 实现 α-β剪枝
+        if(isMaximizing){
+            if(value > bestValue){
+                bestValue = value;
+            }
+            if(bestValue > alpha){
+                alpha = bestValue;
+                if( alpha >= beta ) break;//alpha剪枝
+            }
+        }
+        else{
+            if(value < bestValue){
+                bestValue = value;
+            }
+            if(bestValue > alpha){
+                alpha = bestValue;
+                if( beta <= alpha ) break;//beta剪枝
+            }
+        }
+    }
+    return bestValue;
+}
+
+int FiveInLine::evalueteBoard(int color, vector<vector<int> > &board)
+{
+    int values = 0;
+    //遍历棋盘所有位置
+    //不是想要的颜色跳过
+    for( int x = 0; x <FIL_COLS; ++x){
+        for( int y = 0; y < FIL_ROWS; ++y){
+            if( board[x][y] != color ){
+                continue;
+            }
+            //处理8个方向
+            int j = 0;
+            while(j < directions.size()){
+                int count = 1;
+                vector<int> record;//记录两个方向上中止的原因
+
+                //检查一对方向
+                for(int a = 0; a < 2; a++){
+                    int curX = x;
+                    int curY = y;
+                    for( int i = 0;i < 4; ++i){
+                        //查看延伸的两个方向各4个点 也就是看9个点
+                        //检查边界
+                        if(curX + directions[j].first < 0 ||
+                            curX + directions[j].first >= FIL_COLS ||
+                            curY + directions[j].second < 0 ||
+                            curY + directions[j].second >= FIL_ROWS){
+                            record.push_back(3-color);//认为超出边界也是对方堵死
+                            break;//换另一个方向
+                        }
+                        //移动到下一个位置
+                        curX += directions[j].first;
+                        curY += directions[j].second;
+                        if(board[curX][curY] == color){
+                            count++;
+                        }
+                        else{
+                            record.push_back(board[curX][curY]);
+                            break;
+                        }
+                    }
+                    j++;//切换方向 应该是一组里面
+                }
+                //看完一族的个数 可以看棋子得分
+                //五连200000 活四10000必赢 死四 1000 活三 900一定要拦补一个就赢
+                //死三100
+                //活二90
+                //死二 10
+                if(count >= 5){
+                    values += 200000;
+                }
+                else if(count == 4){
+                    if(record[0] == 0 && record[1] == 0){
+                        //活4
+                        values += 10000;
+                    }
+                    else if(record[0] == 0 && record[1] == 3-color ||
+                            record[1] == 0 && record[0] == 3-color){
+                        //死4
+                        values += 1000;
+                    }
+                }
+                else if(count == 3){
+                    if(record[0] == 0 && record[1] == 0){
+                        //活3
+                        values += 900;
+                    }
+                    else if(record[0] == 0 && record[1] == 3-color ||
+                            record[1] == 0 && record[0] == 3-color){
+                        //死3
+                        values += 100;
+                    }
+                }
+                else if(count == 2){
+                    if(record[0] == 0 && record[1] == 0){
+                        //活2
+                        values += 90;
+                    }
+                    else if(record[0] == 0 && record[1] == 3-color ||
+                            record[1] == 0 && record[0] == 3-color){
+                        //死2
+                        values += 10;
+                    }
+                }
+            }
+        }
+    }
+    return values;
+}
+
+int FiveInLine::evalueteBoard(vector<vector<int> > &board)
+{
+    //放引用就可以 值传递容易栈溢出
+    int white = evalueteBoard( White, board );
+    int black = evalueteBoard( Black, board );
+    return white=black;
 }
 
 void FiveInLine::setCpuColor(int newCpuColor)

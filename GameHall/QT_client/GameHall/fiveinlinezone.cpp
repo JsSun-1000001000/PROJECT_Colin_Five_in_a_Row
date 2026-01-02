@@ -14,9 +14,12 @@ FiveInLineZone::FiveInLineZone(QWidget *parent)
 
     ui->scrollAreaWidgetContents_2->setLayout( m_layout );
 
+    m_vecRoomItem.push_back(nullptr);
+
     for( int i = 0; i < 120; i++){
         RoomItem * item = new RoomItem;
         item->setInfo( i+1 );
+        m_vecRoomItem.push_back( item );
         //roomitem->fiveinlinezone->ckernel
         connect(item, SIGNAL( SIG_JoinRoom(int) ),
                 this,SIGNAL( SIG_joinRoom(int) ));
@@ -43,4 +46,9 @@ void FiveInLineZone::closeEvent(QCloseEvent *event)
     else{
         event->ignore();
     }
+}
+
+std::vector<RoomItem *> &FiveInLineZone::getvecRoomItem()
+{
+    return m_vecRoomItem;
 }

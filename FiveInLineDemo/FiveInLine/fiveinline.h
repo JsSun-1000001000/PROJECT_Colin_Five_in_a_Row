@@ -148,5 +148,52 @@ private:
     //剩余时间计数器
     int m_colorCounter;
     /*-----------------------------------------------------------*/
+
+    /*------------------maxmin搜索+α-β剪枝------------------------*/
+private:
+    //八个方向
+    vector<pair<int, int> > directions = {
+        {0,-1}, {0,1},//上下
+        {-1,1},{1,-1},//左上右下
+        {1,0},{-1,0},//左右
+        {1,1},{-1,-1}, //右上左下
+    };
+    //设置最大深度
+    const int MAX_DEPTH = 4;
+
+    QPoint m_lastPos;
+    std::vector< std::pair<int, int > > m_everyStepPos;
+    //为了方便后续判断 棋局是否结束 我们实现新的isWin判断
+    //判断是否胜利
+    bool isWin( int x, int y, vector<vector<int> >& board );
+    //添加 新的ai下棋接口
+    void pieceDownByBetterCpu();
+    //获得最佳位置 设置maxmin搜索深度
+    void findBestMove(int &bestX, int &bestY, int player, int depth);
+    //获取最佳候选点 这是要遍历查看 可能下棋的点 因为黑子先下棋 电脑后下 所以一定会找到
+    void getNeedHandlePos( vector<pair<int,int> > & copyEveryStep,
+                           vector<pair<int,int> > & candidates,
+                           vector<vector<int> > & board);
+    int minmax(vector<vector<int> > & copyBoard, vector<pair<int,int> > & copyEveryStep,
+               int depth, int alpha, int beta, bool isMaximizing, int Player);
+    //评估棋盘算法
+    //分析一次白棋的得分 分析一次 黑棋的得分 然后做差
+    int evalueteBoard( int color, vector<vector<int> >& board );
+    //总体的棋面分析
+    int evalueteBoard( vector<vector<int> >& board );
+    /*-----------------------------------------------------------*/
+
 };
+
+/*----------------ai落子等待时间过长------------------------------
+ * time 2026.1.2
+ * 优化
+ * 优化思路：
+ * 1.剪枝操作前进行排序 可以更大程度剪枝
+ * 2.加入hash表缓存 如果有计算过 跳过评估旗面
+ * 3.多线程开发 获得最优位置
+ *---------------------------------------------------------------/
+
+#define DEF_ALPHA_BETA 1
+
 #endif // FIVEINLINE_H
