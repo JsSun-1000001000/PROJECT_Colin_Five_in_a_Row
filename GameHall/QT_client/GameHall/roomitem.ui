@@ -105,15 +105,23 @@
      <height>70</height>
     </rect>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>70</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>70</width>
+     <height>70</height>
+    </size>
+   </property>
    <property name="styleSheet">
-    <string notr="true">
-</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="resource.qrc">:/Resource2/icon/slotwait.jpg</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
@@ -128,24 +136,29 @@
      <height>70</height>
     </rect>
    </property>
+   <property name="minimumSize">
+    <size>
+     <width>70</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>70</width>
+     <height>70</height>
+    </size>
+   </property>
    <property name="styleSheet">
-    <string notr="true">
-
-</string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="resource.qrc">:/Resource2/icon/slotwait.jpg</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
    </property>
   </widget>
  </widget>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

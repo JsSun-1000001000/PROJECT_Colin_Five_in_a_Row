@@ -14,6 +14,7 @@ FiveInLine::FiveInLine(QWidget *parent)
     , m_board( FIL_COLS, std::vector<int>( FIL_ROWS, 0 ) )
     , m_isOver(false)
     , m_status( Black ) //有参构造
+    , m_colorCounter( DEFAULT_COUNTER )
 
     //vector 初始化 有参构造 参数 多长 初值多少
 {
@@ -39,6 +40,8 @@ FiveInLine::FiveInLine(QWidget *parent)
 
     clear();
     //slot_startGame();
+    connect( &m_countTimer, SIGNAL( timeout() ),
+            this, SLOT( slot_countTimer() ) );
 }
 
 FiveInLine::~FiveInLine()
@@ -278,6 +281,8 @@ void FiveInLine::clear()
     }
     ui->lb_winner->setText("");
     ui->lb_color->setText("黑子回合");
+
+    ui->lb_timer->hide();
 }
 
 void FiveInLine::setSelfStatus(int _status)
@@ -297,6 +302,8 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
 
         //更新该点棋子颜色后 判断输赢
         if( isWin( x, y ) ){
+            m_countTimer.stop();
+            ui->lb_timer->hide();
             QString str = ( blackorwhite == Black ) ? "黑子" : "白子";
             ui->lb_winner->setText( str + "赢了！" );
 
@@ -323,6 +330,7 @@ void FiveInLine::slot_pieceDown(int blackorwhite, int x, int y)
                     }
                 }
             }
+            m_colorCounter = DEFAULT_COUNTER;
             //更换回合
             changeBlackAndWhite();
             //判断是否是电脑回合 电脑下棋
@@ -339,6 +347,25 @@ void FiveInLine::slot_startGame()
 {
     clear();
     m_isOver = false;
+
+    m_colorCounter = DEFAULT_COUNTER ;
+    ui->lb_timer->show();
+    m_countTimer.start(1000);
+}
+
+void FiveInLine::slot_countTimer()
+{
+    m_colorCounter--;
+    if( m_colorCounter <= 0){
+        //文本更新
+        ui->lb_timer->setText( QString("%1秒").arg(m_colorCounter, 2, 10, QChar('0')) );
+        //切换回合
+        changeBlackAndWhite();
+        m_colorCounter = DEFAULT_COUNTER;
+        return;
+    }
+    //界面文本更新
+    ui->lb_timer->setText( QString("%1秒").arg(m_colorCounter, 2, 10, QChar('0')));
 }
 /*---------------------五子棋赢麻了人机ai--------------------------------*/
 //time 2026.1.1

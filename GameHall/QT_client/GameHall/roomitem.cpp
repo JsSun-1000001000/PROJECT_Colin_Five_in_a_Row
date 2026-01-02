@@ -36,7 +36,7 @@ void RoomItem::on_pb_join_clicked()
 
 void RoomItem::setRoomItem(int num)
 {
-    QPixmap ready = QPixmap(":/images/icon_rui.jpg");
+    QPixmap ready = QPixmap(":/images/icon_rui.png");
     QPixmap wait = QPixmap(":/Resource2/icon/slotwait.jpg");
 
     switch( num ){

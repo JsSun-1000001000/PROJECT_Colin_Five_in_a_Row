@@ -677,7 +677,7 @@ CKernel::CKernel(QObject *parent)
     //故，这个区域一定是连续的，不能定义string，qstring这种
     //m_client->SendData(0,(char*)&rq,sizeof(rq));
 
-    connect( &m_rqTimer, SIGNAL(timeout),
+    connect( &m_rqTimer, SIGNAL(timeout()),
             this, SLOT(slot_roomInfoInZone()) );
 
 
