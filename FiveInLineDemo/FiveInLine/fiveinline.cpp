@@ -42,6 +42,47 @@ FiveInLine::FiveInLine(QWidget *parent)
     //        this, SLOT( slot_countTimer() ) );
 
     slot_startGame();
+
+    for(int i = 0; i < 16; i++){
+        m_worker[i] = new MyWorker(this);
+        connect(m_worker[i], &MyWorker::sig_getScoreFinish ,
+                this,[&]( int x, int y, int score){          ///lambda表达式处理
+                    //todo
+                    //好像是单线程？不需要是线程安全的 没有并发？？
+                    m_taskCount--;//count 会再分配任务时 重新赋值
+
+                    m_vecScoreRes.push_back({x,y,score});
+
+                    if(m_taskCount == 0){
+                        ///将所有结果排序 最高分就是所求
+                        sort(m_vecScoreRes.begin(),m_vecScoreRes.end(),[&](vector<int>&a,vector<int>&b){
+                            return a[2]>b[2];//比较得分
+                        });
+                        int x = m_vecScoreRes[0][0];
+                        int y = m_vecScoreRes[0][1];
+                        if(x!=-1&&y!=-1){
+                            emit SIG_pieceDown(getblackOrWhite(),m_vecScoreRes[0][0],m_vecScoreRes[0][1]);
+                        }
+                        m_vecScoreRes.clear();//没经过一轮 对数组清空
+                    }
+                });
+    }
+    connect( this, SIGNAL(sig_getBetterScore0(int,int,int)),m_worker[0],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore1(int,int,int)),m_worker[1],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore2(int,int,int)),m_worker[2],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore3(int,int,int)),m_worker[3],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore4(int,int,int)),m_worker[4],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore5(int,int,int)),m_worker[5],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore6(int,int,int)),m_worker[6],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore7(int,int,int)),m_worker[7],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore8(int,int,int)),m_worker[8],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore9(int,int,int)),m_worker[9],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore10(int,int,int)),m_worker[10],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore11(int,int,int)),m_worker[11],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore12(int,int,int)),m_worker[12],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore13(int,int,int)),m_worker[13],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore14(int,int,int)),m_worker[14],SLOT(slot_getBetterScore(int,int,int)));
+    connect( this, SIGNAL(sig_getBetterScore15(int,int,int)),m_worker[15],SLOT(slot_getBetterScore(int,int,int)));
 }
 
 FiveInLine::~FiveInLine()
@@ -615,68 +656,113 @@ void FiveInLine::findBestMove(int &bestX, int &bestY, int player, int depth)
     //上来先是max层
     int bestValue = INT_MIN;
     bestX = -1;
-    bestX = -1;
+    bestY = -1;
 
     vector<pair<int, int> > candidates;
-    vector<pair<int, int> > copyEveryStep = m_everyStepPos;//避免出现问题 使用拷贝的
-    vector<vector<int> > copyBoard = m_board;//同理棋盘也是
+    vector<pair<int, int> >& copyEveryStep = m_everyStepPos;//避免出现问题 使用拷贝的
+    vector<vector<int> >& copyBoard = m_board;//同理棋盘也是
 
     //获取要看的点
     getNeedHandlePos(copyEveryStep, candidates, copyBoard );
+    /// 并发执行 就不用排序了 都要算 不会剪枝 可以放到minmax函数里面
     /*---------------优化--------------------------*/
     //排序 用深度为1 的评估得分排序 先算好的 这样剪枝的可能性大大增强
-    sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
-        copyBoard[a.first][a.second] = player;
-        int scoreA = evalueteBoard(copyBoard);
-        copyBoard[a.first][a.second] = None;
+    // sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
+    //     copyBoard[a.first][a.second] = player;
+    //     int scoreA = evalueteBoard(copyBoard);
+    //     copyBoard[a.first][a.second] = None;
 
-        copyBoard[b.first][b.second] = player;
-        int scoreB = evalueteBoard(copyBoard);
-        copyBoard[b.first][b.second] = None;
+    //     copyBoard[b.first][b.second] = player;
+    //     int scoreB = evalueteBoard(copyBoard);
+    //     copyBoard[b.first][b.second] = None;
 
-        return scoreA > scoreB;//降序排列 优先看高分
-    });
-    /*---------------------------------------------*/
-    //遍历所有可能位置
-    for (auto & pos : candidates){
-        int x = pos.first;
-        int y = pos.second;
-        //这个位置之所以能下子 因为是空位置
-        //尝试在该位置下子 如果直接能获得胜利 那么就返回
-        copyBoard[x][y] = player;
-        if(isWin(x,y,copyBoard)){
-            bestX = x;
-            bestY = y;
-            return;
-        }
-        //尝试在该位置 敌人下子 如果能获得胜利 那么也返回
-        copyBoard[x][y] = (player == Black)?White:Black;
-        if(isWin(x, y, copyBoard)){
-            bestX = x;
-            bestY = y;
-            return;
-        }
-        //切换回来 开始 搜索
-        copyBoard[x][y] = player;
-        copyEveryStep.push_back({x,y});
-        //使用极大值极小值搜索配合α-β剪枝 先看min层
-        int moveValue = minmax( copyBoard,
-                               copyEveryStep,
-                               depth - 1,
-                               INT_MIN,
-                               INT_MAX,
-                               false,
-                               player);
-        //dfs 撤销该点落子
-        copyBoard[x][y] = None;
-        copyEveryStep.pop_back();
+    //     return scoreA > scoreB;//降序排列 优先看高分
+    // });
+    /// candidates 根据候选点的情况 分配到多个线程中————我是8核心 打算用8线程<——草泥马和我的24核说去吧
+    int count = candidates.size();
 
-        if(moveValue > bestValue){
-            bestValue = moveValue;
-            bestX = x;
-            bestY = y;
+    m_taskCount = count;
+
+    for( int i = 0; i < count; ++i){
+        switch(i%8){
+        case 0: emit sig_getBetterScore0( candidates[i].first,candidates[i].second,player );
+            break;
+        case 1: emit sig_getBetterScore1( candidates[i].first,candidates[i].second,player );
+            break;
+        case 2: emit sig_getBetterScore2( candidates[i].first,candidates[i].second,player );
+            break;
+        case 3: emit sig_getBetterScore3( candidates[i].first,candidates[i].second,player );
+            break;
+        case 4: emit sig_getBetterScore4( candidates[i].first,candidates[i].second,player );
+            break;
+        case 5: emit sig_getBetterScore5( candidates[i].first,candidates[i].second,player );
+            break;
+        case 6: emit sig_getBetterScore6( candidates[i].first,candidates[i].second,player );
+            break;
+        case 7: emit sig_getBetterScore7( candidates[i].first,candidates[i].second,player );
+            break;
+        case 8: emit sig_getBetterScore8( candidates[i].first,candidates[i].second,player );
+            break;
+        case 9: emit sig_getBetterScore9( candidates[i].first,candidates[i].second,player );
+            break;
+        case 10:    emit sig_getBetterScore10( candidates[i].first,candidates[i].second,player );
+            break;
+        case 11:    emit sig_getBetterScore11( candidates[i].first,candidates[i].second,player );
+            break;
+        case 12:    emit sig_getBetterScore12( candidates[i].first,candidates[i].second,player );
+            break;
+        case 13:    emit sig_getBetterScore13( candidates[i].first,candidates[i].second,player );
+            break;
+        case 14:    emit sig_getBetterScore14( candidates[i].first,candidates[i].second,player );
+            break;
+        case 15:    emit sig_getBetterScore15( candidates[i].first,candidates[i].second,player );
+            break;
         }
     }
+
+
+
+    /*---------------------------------------------*/
+    // //遍历所有可能位置
+    // for (auto & pos : candidates){
+    //     int x = pos.first;
+    //     int y = pos.second;
+    //     //这个位置之所以能下子 因为是空位置
+    //     //尝试在该位置下子 如果直接能获得胜利 那么就返回
+    //     copyBoard[x][y] = player;
+    //     if(isWin(x,y,copyBoard)){
+    //         bestX = x;
+    //         bestY = y;
+    //         return;
+    //     }
+    //     //尝试在该位置 敌人下子 如果能获得胜利 那么也返回
+    //     copyBoard[x][y] = (player == Black)?White:Black;
+    //     if(isWin(x, y, copyBoard)){
+    //         bestX = x;
+    //         bestY = y;
+    //         return;
+    //     }
+    //     //切换回来 开始 搜索
+    //     copyBoard[x][y] = player;
+    //     copyEveryStep.push_back({x,y});
+    //     //使用极大值极小值搜索配合α-β剪枝 先看min层
+    //     int moveValue = minmax( copyBoard,
+    //                            copyEveryStep,
+    //                            depth - 1,
+    //                            INT_MIN,
+    //                            INT_MAX,
+    //                            false,
+    //                            player);
+    //     //dfs 撤销该点落子
+    //     copyBoard[x][y] = None;
+    //     copyEveryStep.pop_back();
+
+    //     if(moveValue > bestValue){
+    //         bestValue = moveValue;
+    //         bestX = x;
+    //         bestY = y;
+    //     }
+    // }
 }
 #include <unordered_set>
 void FiveInLine::getNeedHandlePos(vector<pair<int, int> > &copyEveryStep,
@@ -734,6 +820,9 @@ int FiveInLine::minmax(vector<vector<int> > &copyBoard,
 
     if(candidates.empty()) return 0;
     //对于max层才能这样看 min层要升序 不过会崩溃暂时不知道什么原因 先不看
+
+    //这个位置可能是负优化
+
     if(isMaximizing){
         //排序 用深度为1 的评估得分排序 先算好的 这样剪枝的可能性大大增强
         sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
@@ -748,9 +837,21 @@ int FiveInLine::minmax(vector<vector<int> > &copyBoard,
             return scoreA > scoreB;//降序排列 优先看高分
         });
     }
-    /*else{
-        //todo 会崩溃先不看了
-    }*/
+    // else{
+    //     //todo 会崩溃先不看了
+    //     //玩家的回合可以考虑 玩家的得分最高来排序 只看黑棋的分数 黑棋分数最大 白棋就最低
+    //     sort(candidates.begin(), candidates.end(),[&](pair<int,int>&a,pair<int,int>&b){
+    //         copyBoard[a.first][a.second] = player;
+    //         int scoreA = evalueteBoard(Black, copyBoard);
+    //         copyBoard[a.first][a.second] = None;
+
+    //         copyBoard[b.first][b.second] = player;
+    //         int scoreB = evalueteBoard(Black, copyBoard);
+    //         copyBoard[b.first][b.second] = None;
+
+    //         return scoreA > scoreB;//降序排列 优先看高分
+    //     });
+    // }
 
     //遍历所有可能位置
     for(auto & pos : candidates){
@@ -864,18 +965,18 @@ int FiveInLine::evalueteBoard(int color, vector<vector<int> > &board)
                     else if(record[0] == 0 && record[1] == 3-color ||
                             record[1] == 0 && record[0] == 3-color){
                         //死4
-                        values += 1000;
+                        values += 5000;
                     }
                 }
                 else if(count == 3){
                     if(record[0] == 0 && record[1] == 0){
                         //活3
-                        values += 900;
+                        values += 1000;
                     }
                     else if(record[0] == 0 && record[1] == 3-color ||
                             record[1] == 0 && record[0] == 3-color){
                         //死3
-                        values += 100;
+                        values += 500;
                     }
                 }
                 else if(count == 2){
@@ -898,8 +999,32 @@ int FiveInLine::evalueteBoard(int color, vector<vector<int> > &board)
 int FiveInLine::evalueteBoard(vector<vector<int> > &board)
 {
     //放引用就可以 值传递容易栈溢出
+    ///先计算棋盘hash
+    /// 查看是否有 有就直接返回
+    /// 没有的话 计算并添加到缓存
+    /// 先查看是否要淘汰，如果是就先淘汰
+    string hash = getBoardHash(board);
+
+    if(evalueteCache.count(hash)>0){
+        return evalueteCache[hash];
+    }
+
     int white = evalueteBoard( White, board );
     int black = evalueteBoard( Black, board );
+
+    /// 这里多线程访问 访问共享资源 需要加锁
+    {
+        lock_guard<mutex> lck(m_mtx);
+        if(CacheQueue.size()>1000){
+            evalueteCache.erase(CacheQueue.front());/// 根据key值删除，队列中添加的是字符串key值
+            CacheQueue.pop_front();
+        }
+
+        //缓存结果
+        evalueteCache[hash] = white-black;
+        CacheQueue.push_back(hash);
+    }
+
     return white - black;
 }
 

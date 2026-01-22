@@ -40,6 +40,10 @@ QT_END_NAMESPACE
 #include <QPaintEvent>
 #include <QTimer>
 #include <unordered_map>
+#include <deque>
+#include "myworker.h"
+#include <atomic>
+#include <mutex>
 /*---------------------赢麻了ai----------------------*/
 //time 2025.12.31
 
@@ -70,6 +74,25 @@ class FiveInLine : public QWidget
 signals://用信号记录落子
     //落子信号
     void SIG_pieceDown( int blackorwhite, int x, int y );
+
+    //发送信号完成 完成计算得分
+    void sig_getBetterScore0( int x, int y, int player );
+    void sig_getBetterScore1( int x, int y, int player );
+    void sig_getBetterScore2( int x, int y, int player );
+    void sig_getBetterScore3( int x, int y, int player );
+    void sig_getBetterScore4( int x, int y, int player );
+    void sig_getBetterScore5( int x, int y, int player );
+    void sig_getBetterScore6( int x, int y, int player );
+    void sig_getBetterScore7( int x, int y, int player );
+    void sig_getBetterScore8( int x, int y, int player );
+    void sig_getBetterScore9( int x, int y, int player );
+    void sig_getBetterScore10( int x, int y, int player );
+    void sig_getBetterScore11( int x, int y, int player );
+    void sig_getBetterScore12( int x, int y, int player );
+    void sig_getBetterScore13( int x, int y, int player );
+    void sig_getBetterScore14( int x, int y, int player );
+    void sig_getBetterScore15( int x, int y, int player );
+
 
 public:
     FiveInLine(QWidget *parent = nullptr);
@@ -160,7 +183,7 @@ private:
         {1,1},{-1,-1}, //右上左下
     };
     //设置最大深度
-    const int MAX_DEPTH = 4;
+    const int MAX_DEPTH = 5;//层数越多越长时间
 
     QPoint m_lastPos;
     std::vector< std::pair<int, int > > m_everyStepPos;
@@ -188,20 +211,33 @@ private:
     //形成一个字符串
     //那么 长度就是15*15 = 225 那么长
     string getBoardHash( vector<vector<int> > & board);
+    ///一个是hash表 存数据 因为不能无休止添加，需要内存，太大的时候淘汰，那么使用先进先出的淘汰方式
+    ///借助辅助队列实现
     unordered_map<string, int> evalueteCache;
-    //
+    deque<string> CacheQueue;
+
+    friend class MyWorker;
+
+    MyWorker * m_worker[16];///来个16核试试
+
+    ///任务数
+    atomic<int> m_taskCount;    //使用原子锁 多个线程 操作保证线程安全
+    mutex m_mtx;
+    vector<vector<int>> m_vecScoreRes;         //搜索所有结果，添加到数组 数组每个元素是x y score
     /*-----------------------------------------------------------*/
+
 
 };
 
-/*----------------ai落子等待时间过长------------------------------
- * time 2026.1.2
+/**----------------ai落子等待时间过长------------------------------
+ * @note time 2026.1.2
  * 优化
  * 优化思路：
  * 1.剪枝操作前进行排序 可以更大程度剪枝
  * 2.加入hash表缓存 如果有计算过 跳过评估旗面
- * 3.多线程开发 获得最优位置
- *---------------------------------------------------------------*/
+ * 3.多线程开发 获得最优位置 movetothread
+ *---------------------------------------------------------------
+ */
 
 #define DEF_ALPHA_BETA 1
 

@@ -29,7 +29,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">background-image: url(:/images/fiveinLine.jpg);</string>
   </property>
   <widget class="QPushButton" name="pb_join">
    <property name="geometry">

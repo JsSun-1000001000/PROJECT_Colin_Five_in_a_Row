@@ -10,22 +10,15 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    fiveinline.cpp \
-    myworker.cpp
+    dialog.cpp
 
 HEADERS += \
-    fiveinline.h \
-    myworker.h
+    dialog.h
 
 FORMS += \
-    fiveinline.ui
+    dialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-RESOURCES += \
-    FiveInLine.qrc
-
-

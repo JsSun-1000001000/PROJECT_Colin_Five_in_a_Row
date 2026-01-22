@@ -149,7 +149,7 @@ github.com/JsSun-1000001000</string>
     <enum>QTabWidget::TabShape::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="elideMode">
     <enum>Qt::TextElideMode::ElideNone</enum>
@@ -357,7 +357,7 @@ github.com/JsSun-1000001000</string>
        <x>30</x>
        <y>200</y>
        <width>291</width>
-       <height>23</height>
+       <height>29</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">

@@ -24,41 +24,77 @@
 #define S44 21  
   
  #define UINT4 unsigned int
-/* F, G, H and I are basic MD5 functions. 
-*/  
+/* F, G, H and I are basic MD5 functions.
+*/
+/**
+ * @brief MD5的4个基本非线性函数
+ *
+ * F、G、H、I分别用于4轮变换，输入3个32位参数，输出1个32位值。
+ */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))  
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))  
 #define H(x, y, z) ((x) ^ (y) ^ (z))  
 #define I(x, y, z) ((y) ^ ((x) | (~z)))  
   
 /* ROTATE_LEFT rotates x left n bits. 
-*/  
+*/
+/**
+ * @brief 循环左移操作
+ *
+ * @param x 待移位的值
+ * @param n 移位位数（0-31）
+ * @return 左移n位后的值（溢出位补到右侧）
+ */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))  
   
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4. 
 Rotation is separate from addition to prevent recomputation. 
-*/  
+*/
+
+/**
+ * @brief 轮1的变换宏
+ *
+ * @param a,b,c,d 状态变量
+ * @param x 当前32位字
+ * @param s 移位值
+ * @param ac 常数
+ * 更新状态变量a：a = (a + F(b,c,d) + x + ac) 循环左移s位 + b
+ */
 #define FF(a, b, c, d, x, s, ac) { \
  (a) += F ((b), (c), (d)) + (x) + (UINT4)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+
+/**
+ * @brief 轮2的变换宏（逻辑同FF，使用G函数）
+ */
 #define GG(a, b, c, d, x, s, ac) { \
  (a) += G ((b), (c), (d)) + (x) + (UINT4)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+
+/**
+ * @brief 轮3的变换宏（逻辑同FF，使用H函数）
+ */
 #define HH(a, b, c, d, x, s, ac) { \
  (a) += H ((b), (c), (d)) + (x) + (UINT4)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+
+/**
+ * @brief 轮4的变换宏（逻辑同FF，使用I函数）
+ */
 #define II(a, b, c, d, x, s, ac) { \
  (a) += I ((b), (c), (d)) + (x) + (UINT4)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
-const Byte MD5::PADDING[64] = { 0x80 };
+
+// 静态成员初始化
+const Byte MD5::PADDING[64] = { 0x80 };     ///< 填充的起始字节为0x80，其余为0
 const char MD5::HEX[16] = {  
     '0', '1', '2', '3',  
     '4', '5', '6', '7',  
@@ -66,30 +102,60 @@ const char MD5::HEX[16] = {
     'c', 'd', 'e', 'f'  
 };  
   
-/* Default construct. */  
+/* Default construct. */
+/**
+ * @brief 默认构造函数实现
+ *
+ * 调用reset()初始化状态。
+ */
 MD5::MD5() {  
     reset();  
 }  
-  
-/* Construct a MD5 object with a input buffer. */  
+
+/* Construct a MD5 object with a input buffer. */
+/**
+ * @brief 构造函数（内存数据）实现
+ *
+ * @param input 输入数据指针
+ * @param length 数据长度
+ * 初始化后立即处理输入数据。
+ */
 MD5::MD5(const void *input, size_t length) {  
     reset();  
     update(input, length);  
 }  
   
-/* Construct a MD5 object with a string. */  
+/* Construct a MD5 object with a string. */
+/**
+ * @brief 构造函数（字符串）实现
+ *
+ * @param str 输入字符串
+ * 初始化后立即处理字符串。
+ */
 MD5::MD5(const string &str) {  
     reset();  
     update(str);  
 }  
   
-/* Construct a MD5 object with a file. */  
+/* Construct a MD5 object with a file. */
+/**
+ * @brief 构造函数（文件流）实现
+ *
+ * @param in 输入文件流
+ * 初始化后立即处理文件内容。
+ */
 MD5::MD5(ifstream &in) {  
     reset();  
     update(in);  
 }  
   
-/* Return the message-digest */  
+/* Return the message-digest */
+/**
+ * @brief 获取哈希值实现
+ *
+ * @return 指向16字节哈希值的指针
+ * 若未完成计算，先调用final()。
+ */
 const Byte* MD5::digest() {
     if (!_finished) {  
         _finished = true;  
@@ -98,30 +164,54 @@ const Byte* MD5::digest() {
     return _digest;  
 }  
   
-/* Reset the calculate state */  
+/* Reset the calculate state */
+/**
+ * @brief 重置状态实现
+ *
+ * 恢复状态变量、计数器和缓冲区，标记计算未完成。
+ */
 void MD5::reset() {  
   
     _finished = false;  
-    /* reset number of bits. */  
+    /* reset number of bits. */  /* 重置消息长度计数器（初始为0比特） */
     _count[0] = _count[1] = 0;  
-    /* Load magic initialization constants. */  
+    /* Load magic initialization constants. */  /* 初始化状态变量（A、B、C、D） */
     _state[0] = 0x67452301;  
     _state[1] = 0xefcdab89;  
     _state[2] = 0x98badcfe;  
     _state[3] = 0x10325476;  
 }  
   
-/* Updating the context with a input buffer. */  
+/* Updating the context with a input buffer. */
+/**
+ * @brief 追加内存数据实现（对外接口）
+ *
+ * @param input 数据指针
+ * @param length 数据长度
+ * 转发到底层字节处理接口。
+ */
 void MD5::update(const void *input, size_t length) {  
     update((const Byte*)input, length);
 }  
   
-/* Updating the context with a string. */  
+/* Updating the context with a string. */
+/**
+ * @brief 追加字符串实现
+ *
+ * @param str 输入字符串
+ * 转换为字节数组后处理。
+ */
 void MD5::update(const string &str) {  
     update((const Byte*)str.c_str(), str.length());
 }  
   
-/* Updating the context with a file. */  
+/* Updating the context with a file. */
+/**
+ * @brief 追加文件内容实现
+ *
+ * @param in 输入文件流
+ * 按缓冲区大小读取文件并处理。
+ */
 void MD5::update(ifstream &in) {  
   
     if (!in)  
@@ -131,7 +221,7 @@ void MD5::update(ifstream &in) {
     char buffer[BUFFER_SIZE];  
     while (!in.eof()) {  
         in.read(buffer, BUFFER_SIZE);  
-        length = in.gcount();  
+        length = in.gcount();  //返回最近一次无格式输入操作实际提取的字符数
         if (length > 0)  
             update(buffer, length);  
     }  
@@ -141,44 +231,57 @@ void MD5::update(ifstream &in) {
 /* MD5 block update operation. Continues an MD5 message-digest 
 operation, processing another message block, and updating the 
 context. 
-*/  
+*/
+/**
+ * @brief 内部字节数据处理实现
+ *
+ * @param input 字节数组
+ * @param length 数据长度
+ * 累积数据到缓冲区，满64字节时调用transform()处理。
+ */
 void MD5::update(const Byte *input, size_t length) {
   
     ulong i, index, partLen;  
   
-    _finished = false;  
+    _finished = false;  // 追加数据后需重新计算
   
-    /* Compute number of bytes mod 64 */  
-    index = (ulong)((_count[0] >> 3) & 0x3f);  
+    /* Compute number of bytes mod 64 */  /* 计算当前缓冲区中已有的字节数（模64） */
+    index = (ulong)((_count[0] >> 3) & 0x3f);  ///< _count[0]是低32位比特数，右移3得字节数
   
-    /* update number of bits */  
-    if((_count[0] += ((ulong)length << 3)) < ((ulong)length << 3))  
-        _count[1]++;  
-    _count[1] += ((ulong)length >> 29);  
+    /* update number of bits */  /* 更新消息总长度（比特） */
+    if((_count[0] += ((ulong)length << 3)) < ((ulong)length << 3))  ///< 低32位溢出
+        _count[1]++;                                                ///< 高32位+1
+    _count[1] += ((ulong)length >> 29);                             ///< 剩余比特计入高32位（length <<3的高3位）
   
-    partLen = 64 - index;  
+    partLen = 64 - index;  ///< 缓冲区剩余空间
   
-    /* transform as many times as possible. */  
+    /* transform as many times as possible. */  /* 若输入数据足够填满缓冲区，先处理完整块 */
     if(length >= partLen) {  
   
-        memcpy(&_buffer[index], input, partLen);  
-        transform(_buffer);  
-  
+        memcpy(&_buffer[index], input, partLen);  // 填满缓冲区
+        transform(_buffer);  // 处理该块
+
+        /* 处理剩余的完整块（每64字节一个） */
         for (i = partLen; i + 63 < length; i += 64)  
             transform(&input[i]);  
-        index = 0;  
+        index = 0;      // 重置缓冲区索引
   
     } else {  
-        i = 0;  
+        i = 0;          // 数据不足填满缓冲区，仅累积
     }  
   
-    /* Buffer remaining input */  
+    /* Buffer remaining input */   /* 缓存剩余数据到缓冲区 */
     memcpy(&_buffer[index], &input[i], length-i);  
 }  
   
 /* MD5 finalization. Ends an MD5 message-_digest operation, writing the 
 the message _digest and zeroizing the context. 
-*/  
+*/
+/**
+ * @brief 完成计算实现
+ *
+ * 对剩余数据填充，处理最后一个块，生成最终哈希值。
+ */
 void MD5::final() {  
   
     Byte bits[8];
@@ -186,30 +289,36 @@ void MD5::final() {
     ulong oldCount[2];  
     ulong index, padLen;  
   
-    /* Save current state and count. */  
-    memcpy(oldState, _state, 16);  
+    /* Save current state and count. */  /* 保存当前状态和计数器（允许后续继续update） */
+    memcpy(oldState, _state, 16);
     memcpy(oldCount, _count, 8);  
   
-    /* Save number of bits */  
+    /* Save number of bits */  /* 将64位长度（比特）编码为字节数组（小端序） */
     encode(_count, bits, 8);  
   
-    /* Pad out to 56 mod 64. */  
+    /* Pad out to 56 mod 64. */  /* 计算填充长度：补到56字节（448比特），若已超过则补到120字节（960比特） */
     index = (ulong)((_count[0] >> 3) & 0x3f);  
     padLen = (index < 56) ? (56 - index) : (120 - index);  
     update(PADDING, padLen);  
   
-    /* Append length (before padding) */  
+    /* Append length (before padding) */  /* 追加原始消息长度（64位） */
     update(bits, 8);  
   
-    /* Store state in digest */  
+    /* Store state in digest */  /* 将最终状态编码为16字节哈希值 */
     encode(_state, _digest, 16);  
   
-    /* Restore current state and count. */  
+    /* Restore current state and count. */  /* 恢复状态和计数器（支持重置后继续使用） */
     memcpy(_state, oldState, 16);  
     memcpy(_count, oldCount, 8);  
 }  
   
-/* MD5 basic transformation. Transforms _state based on block. */  
+/* MD5 basic transformation. Transforms _state based on block. */
+/**
+ * @brief 处理512位块实现
+ *
+ * @param block 64字节数据块
+ * 执行4轮变换，更新状态变量A、B、C、D。
+ */
 void MD5::transform(const Byte block[64]) {
   
     ulong a = _state[0], b = _state[1], c = _state[2], d = _state[3], x[16];  
@@ -287,7 +396,7 @@ void MD5::transform(const Byte block[64]) {
     II (d, a, b, c, x[11], S42, 0xbd3af235); /* 62 */  
     II (c, d, a, b, x[ 2], S43, 0x2ad7d2bb); /* 63 */  
     II (b, c, d, a, x[ 9], S44, 0xeb86d391); /* 64 */  
-  
+    /* 更新状态变量（累加本轮结果） */
     _state[0] += a;  
     _state[1] += b;  
     _state[2] += c;  
@@ -296,20 +405,36 @@ void MD5::transform(const Byte block[64]) {
   
 /* Encodes input (ulong) into output (md5byte). Assumes length is
 a multiple of 4. 
-*/  
+*/
+/**
+ * @brief 长整数数组编码为字节数组实现
+ *
+ * @param input 32位长整数数组
+ * @param output 输出字节数组
+ * @param length 总长度（字节，4的倍数）
+ * 按小端序编码（低字节在前）。
+ */
 void MD5::encode(const ulong *input, Byte *output, size_t length) {
   
     for(size_t i=0, j=0; j<length; i++, j+=4) {  
-        output[j]= (Byte)(input[i] & 0xff);
-        output[j+1] = (Byte)((input[i] >> 8) & 0xff);
-        output[j+2] = (Byte)((input[i] >> 16) & 0xff);
-        output[j+3] = (Byte)((input[i] >> 24) & 0xff);
+        output[j]= (Byte)(input[i] & 0xff);             ///< 低8位
+        output[j+1] = (Byte)((input[i] >> 8) & 0xff);   ///< 次低8位
+        output[j+2] = (Byte)((input[i] >> 16) & 0xff);  ///< 次高低8位
+        output[j+3] = (Byte)((input[i] >> 24) & 0xff);  ///< 高8位
     }  
 }  
   
 /* Decodes input (md5byte) into output (ulong). Assumes length is
 a multiple of 4. 
-*/  
+*/
+/**
+ * @brief 字节数组解码为长整数数组实现
+ *
+ * @param input 输入字节数组
+ * @param output 32位长整数数组
+ * @param length 总长度（字节，4的倍数）
+ * 按小端序解码（低字节对应长整数低位）。
+ */
 void MD5::decode(const Byte *input, ulong *output, size_t length) {
   
     for(size_t i=0, j=0; j<length; i++, j+=4) {    
@@ -319,6 +444,13 @@ void MD5::decode(const Byte *input, ulong *output, size_t length) {
 }  
   
 /* Convert md5byte array to hex string. */
+/**
+ * @brief 字节数组转十六进制字符串实现
+ *
+ * @param input 输入字节数组
+ * @param length 字节长度
+ * @return 十六进制字符串（小写）
+ */
 string MD5::bytesToHexString(const Byte *input, size_t length) {
     string str;  
     str.reserve(length << 1);  
@@ -332,7 +464,13 @@ string MD5::bytesToHexString(const Byte *input, size_t length) {
     return str;  
 }  
   
-/* Convert digest to string value */  
+/* Convert digest to string value */
+/**
+ * @brief 哈希值转字符串实现
+ *
+ * @return 32位十六进制字符串
+ */
+
 string MD5::toString() {  
     return bytesToHexString(digest(), 16);  
 }

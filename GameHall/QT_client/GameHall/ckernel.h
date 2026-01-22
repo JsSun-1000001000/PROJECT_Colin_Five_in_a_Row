@@ -12,8 +12,8 @@
 #include "roomdialog.h"
 #include <QTimer>
 
-//成员函数指针类型
 class CKernel;
+//成员函数指针类型
 typedef void (CKernel::*PFUN)( unsigned int lSendIP , char* buf , int nlen );
 
 //单例 最简单 静态的
